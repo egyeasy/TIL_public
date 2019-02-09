@@ -56,3 +56,7 @@ https://ionicframework.com/docs/publishing/play-store
 2) bluestacks
 
 3) android emulator - 가상 디바이스에서 실행
+
+
+### 참고
+동기 컴퓨터 Android SDK Location : C:\Android\Device
