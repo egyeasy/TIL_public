@@ -1,17 +1,60 @@
-n = int(input())
-stars = [""] * 3
-for i in range(1, 4):
-    stars[i-1] = " "*(3-i)+"*"*(2*i-1)+" "*(3-i)
-stars[1] = " * * "
+"""
+예제를 보고 규칙을 유추한 뒤에 별을 찍어 보세요.
+
+> 입력
+첫째 줄에 N이 주어진다. N은 항상 3×2k 수이다. (3, 6, 12, 24, 48, ...) (k ≤ 10)
+24
+
+> 출력
+첫째 줄부터 N번째 줄까지 별을 출력한다.
+                       *                        
+                      * *                       
+                     *****                      
+                    *     *                     
+                   * *   * *                    
+                  ***** *****                   
+                 *           *                  
+                * *         * *                 
+               *****       *****                
+              *     *     *     *               
+             * *   * *   * *   * *              
+            ***** ***** ***** *****             
+           *                       *            
+          * *                     * *           
+         *****                   *****          
+        *     *                 *     *         
+       * *   * *               * *   * *        
+      ***** *****             ***** *****       
+     *           *           *           *      
+    * *         * *         * *         * *     
+   *****       *****       *****       *****    
+  *     *     *     *     *     *     *     *   
+ * *   * *   * *   * *   * *   * *   * *   * *  
+***** ***** ***** ***** ***** ***** ***** *****
+
+"""
+
+target_n = int(input())
+stars = ["  *  ",
+        " * * ",
+        "*****"]
+
+n = 3
+while n < target_n:
+    n *= 2
+    new_stars = [""] * n
+    ori_n = n//2
+    for i in range(ori_n):
+        new_stars[i] = " "*(ori_n) + stars[i] + " "*(ori_n)
+        new_stars[i+ori_n] = stars[i] + " " + stars[i]
+
+    stars = new_stars
+
 for i in stars:
     print(i)
 
-def upgrade(stars, n):
-    stars = stars*3
-    for i in range(n//2):
-        stars[i] = " "*(n//2 - i) + stars[i]
 
-upgrade(stars, n)
 
-for i in stars:
-    print(i)
+# 생각
+# 1. 줄 별로 배열 단위로 생각하니 훨씬 간단하다. 덩어리로 큰 그림을 그리되,
+# 코드는 줄 별 배열에서 규칙적인 index 적용해서 찾으면 된다.
