@@ -62,16 +62,20 @@ l = 0
 u = 4
 로 주어지면, 리스트 L 내에 4 의 원소가 존재하지 않으므로 -1 을 리턴해야 합니다.
 
+
+
+# 5강 실습: 재귀적 이진 탐색 구현하기
+
 ```python
 def solution(L, x, l, u):
-    if not x in L:
+    if l > u:
         return -1
     mid = (l + u) // 2
     if x == L[mid]:
         return mid
     elif x < L[mid]:
-        return solution(L, x, l, mid-1)
+        return solution(L, x, l, mid - 1)
     else:
-        return solution(L, x, mid+1, u)
+        return solution(L, x, mid + 1, u)
 ```
 
