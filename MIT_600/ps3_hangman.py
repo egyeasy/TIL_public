@@ -51,6 +51,12 @@ def isWordGuessed(secretWord, lettersGuessed):
       False otherwise
     '''
     # FILL IN YOUR CODE HERE...
+    judge = True
+    for l in secretWord:
+        if l not in lettersGuessed:
+            judge = False
+    
+    return judge
 
 
 
@@ -62,6 +68,14 @@ def getGuessedWord(secretWord, lettersGuessed):
       what letters in secretWord have been guessed so far.
     '''
     # FILL IN YOUR CODE HERE...
+    result = ''
+    for i in secretWord:
+        if i in lettersGuessed:
+            result += i
+        else:
+            result += '_'
+        result += ' '
+    return result[:-1]
 
 
 
