@@ -57,6 +57,12 @@ https://ionicframework.com/docs/publishing/play-store
 
 3) android emulator - 가상 디바이스에서 실행
 
+`project_name/platforms/android/` 를 project directory로 설정해서 실행.
+
+debug.apk 파일을 에뮬레이터에 드래그 앤 드롭으로 깔아서 실행 가능
+
+reference : https://mainia.tistory.com/5301
+
 
 ### 참고
 동기 컴퓨터 Android SDK Location : C:\Android\Device

@@ -1,6 +1,8 @@
 import sys
 sys.stdin = open('15971.txt', 'r')
 
+top = 0
+
 def backS(s):
     global m, end, go_sum
     curr_sum = 0
