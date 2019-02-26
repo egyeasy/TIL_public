@@ -26,7 +26,7 @@ def isempty():
     return rear == front
 
 def bfs(s):
-    global max_floor
+    global max_floor, max_dis
     enqueue(s)
     floor[s] = 1
     while not isempty():
@@ -45,6 +45,7 @@ def bfs(s):
             elif floor[s] == max_floor:
                 max_idx += 1
                 max_list[max_idx] = floor[s]
+
             if s == end:
                 return max_list
             print(f"floor: {floor}\nformer: {former}")
@@ -53,6 +54,15 @@ def bfs(s):
                 if dis and not visited[i]:
                     if not former[i]:
                         former[i] = s
+                        if former[s]:
+                            if dis < max_dis:
+                                matrix[s][i] = matrix[former[s]][s] + dis
+                            else:
+                                matrix[s][i] = matrix[former[s]][s] + max_dis
+                                max_dis = dis
+                    print(f"matrix:")
+                    for k in matrix:
+                        print(k)
                     enqueue(i)
 
 T = int(input())
@@ -74,7 +84,7 @@ for tc in range(1, T + 1):
         print(i)
 
     max_floor = 0
-
+    max_dis = 0
     max_lists = bfs(start)
     print(max_lists)
 
