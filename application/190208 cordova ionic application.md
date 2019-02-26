@@ -39,11 +39,13 @@ https://ionicframework.com/docs/publishing/play-store
 
    -key 비밀번호는 어디든 적어서 보관해둘 것. key 파일도 하나의 key로 계속 버전업 해야하니 꼭 잘 보관할 것.
 
+```
+sudo ~/Library/Android/sdk/build-tools/28.0.3/zipalign -v 4 app-release-unsigned.apk undongjang_release_10101.apk
+```
+
 
 
 - 출시 이전 단계에서 출시 모드를 낼 때 버전을 변경해야 하는데, `pjt_folder\config.xml` 에서 line 2의 version을 바꿔주는 것이 맞는 듯. 별도 언급 없으면 그런 것으로.
-
-
 
 
 
