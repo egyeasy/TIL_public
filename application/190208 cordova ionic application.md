@@ -39,6 +39,8 @@ https://ionicframework.com/docs/publishing/play-store
 
    -key 비밀번호는 어디든 적어서 보관해둘 것. key 파일도 하나의 key로 계속 버전업 해야하니 꼭 잘 보관할 것.
 
+   -실제로 쓰인 key는 real-release-key.keysotre
+
 ```
 sudo ~/Library/Android/sdk/build-tools/28.0.3/zipalign -v 4 app-release-unsigned.apk undongjang_release_10101.apk
 ```
