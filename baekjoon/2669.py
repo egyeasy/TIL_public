@@ -4,9 +4,9 @@ sys.stdin = open('2669.txt', 'r')
 mat = [[0] * 100 for i in range(100)]
 
 for i in range(4):
-    aline = input()
-    a = list(map(int, aline[:3].split()))
-    b = list(map(int, aline[4:].split()))
+    aline = list(map(int, input().split()))
+    a = aline[:2]
+    b = aline[2:]
     # a = [100 - a[1], a[0]]
     # b = [100 - b[1], b[0]]
     # print(a, b)
