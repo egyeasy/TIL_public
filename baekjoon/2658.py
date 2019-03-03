@@ -90,9 +90,13 @@ else:
                         if (dis_list[0] + 1) * (dis_list[1] + 1) != area:
                             print(0)
                         else:
-                            print(first[0], first[1])
-                            print(second[0], second[1])
-                            print(third[0], third[1])
+                            results = [first, second, third]
+                            results = sorted(results, key=lambda item: (item[0], item[1]))
+                            for item in results:
+                                print(item[0], item[1])
+                            # print(first[0], first[1])
+                            # print(second[0], second[1])
+                            # print(third[0], third[1])
 
 
 
