@@ -37,7 +37,7 @@ def bfs(s):
         s = dequeue()
         for i in range(m + 1, 0, -1):
             if mat[s][i]:
-                print(f"방문: {s}, 후보: {i}")
+                # print(f"방문: {s}, 후보: {i}")
                 if i == m + 1:
                     if not visited[i] or visited[s] < visited[i]:
                         former[i] = s
@@ -50,53 +50,50 @@ def bfs(s):
                         visited[i] = cand_time
                         former[i] = s
                         enqueue(i)
-                print(f"visited: {visited}")
-                print(f"former: {former}")
+                # print(f"visited: {visited}")
+                # print(f"former: {former}")
 
 
-T = int(input())
-for tc in range(1, T + 1):
-    one_go = int(input())
-    m = int(input())
-    distances = list(map(int, input().split()))
-    times = list(map(int, input().split()))
+one_go = int(input())
+m = int(input())
+distances = list(map(int, input().split()))
+times = list(map(int, input().split()))
 
-    mat = [[0] * (m + 2) for _ in range(m + 2)]
-    visited = [0] * (m + 2)
-    former = [0] * (m + 2)
+mat = [[0] * (m + 2) for _ in range(m + 2)]
+visited = [0] * (m + 2)
+former = [0] * (m + 2)
 
-    for i in range(m + 2):
-        for j in range(m + 2):
-            if i < j and sum(distances[i:j]) <= one_go:
-                mat[i][j] = 1
+for i in range(m + 2):
+    for j in range(m + 2):
+        if i < j and sum(distances[i:j]) <= one_go:
+            mat[i][j] = 1
 
-    for i in mat:
-        print(i)
-    print(f"distances: {distances}")
-    print(f"times: {times}")
+# for i in mat:
+#     print(i)
+# print(f"distances: {distances}")
+# print(f"times: {times}")
 
-    q = [0] * (m + 2)
-    front = 0
-    rear = 0
-    no_stops = False
+q = [0] * (m + 2)
+front = 0
+rear = 0
+no_stops = False
 
-    bfs(0)
-    print(f"#{tc}")
-    if no_stops:
-        print(0)
-        print(0)
+bfs(0)
+if no_stops:
+    print(0)
+    print(0)
 
-    else:
-        p = m + 1
-        time_sum = 0
-        num = 0
-        result = ""
-        while former[p]:
-            p = former[p]
-            time_sum += times[p - 1]
-            num += 1
-            result = str(p) + " " + result
+else:
+    p = m + 1
+    time_sum = 0
+    num = 0
+    result = ""
+    while former[p]:
+        p = former[p]
+        time_sum += times[p - 1]
+        num += 1
+        result = str(p) + " " + result
 
-        print(time_sum)
-        print(num)
-        print(result)
+    print(time_sum)
+    print(num)
+    print(result)
