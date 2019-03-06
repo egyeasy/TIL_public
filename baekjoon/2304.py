@@ -17,13 +17,6 @@ max_idx = lines.index(max_line)
 #     print(i)
 
 total_area = 0
-
-# col_idx = 0
-# max_height = 0
-# for i in range(lines[0][0], max_line[0]):
-#     if
-
-
 max_height = lines[0][1]
 
 for i in range(max_idx + 1):
