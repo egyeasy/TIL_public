@@ -12,7 +12,6 @@ visited = []
 def bfs(s):
     global all_zero, front, rear
     # enqueue(s)
-    lenq = len(q)
     rear = (rear + 1) % lenq
     q[rear] = s
     while not rear == front:
@@ -54,6 +53,10 @@ for i in range(N_row):
 total_time = 0
 all_zero = False
 found = False
+first_met_row = 0
+last_met_row = N_row
+lenq = len(q)
+
 
 while not all_zero:
     q = [0] * (N_row * M_col)
@@ -62,7 +65,7 @@ while not all_zero:
     visited = [[0] * M_col for _ in range(N_row)]
     continent_cnt = 0
 
-    for i in range(N_row):
+    for i in range(first_met_row, last_met_row):
         for j in range(M_col):
             if mat[i][j] and not visited[i][j]:
                 all_zero = True
@@ -82,7 +85,7 @@ while not all_zero:
     # print()
 
 if continent_cnt >= 2:
-    print(total_time - 1)
+    print(total_time - 1)z
 else:
     print(0)
 
