@@ -25,43 +25,55 @@ for i in range(N - 1):
     check = True
     # one_life = True
     cnt = 0
-    for key, item in cand_cnt.items():
-        if key not in first_cnt:
-            if one_life:
-                cnt += 1
-                if cnt >= 2:
-                    check = False
-                    break
-            elif item == 1 and cnt == 1:
-                continue
-            else:
-                check = False
-                break
-        elif first_cnt[key] == item:
+    for key, item in first_cnt.items():
+        if key not in cand_cnt:
+            cand_cnt[key] = -item
+        else:
+            cand_cnt[key] -= item
+    # print(first_cnt)
+    # print(cand_cnt)
+    minus_one_finded = False
+    plus_one_finded = False
+    changed = False
+    judge = True
+    for item in cand_cnt.values():
+        if item == 0:
             continue
-        elif item - first_cnt[key] == 1:
-            if one_life:
-                cnt += 1
-                if cnt >= 2:
-                    check = False
+        elif item == 1:
+            if not changed:
+                if plus_one_finded:
+                    judge = False
                     break
+                elif minus_one_finded:
+                    minus_one_finded = False
+                    changed = True
+                else:
+                    plus_one_finded = True
             else:
+                judge = False
                 break
-
-        elif item - first_cnt[key] == 1:
-            if cnt == 1 and one_life:
-                cnt = 0
-                one_life = False
+        elif item == -1:
+            if not changed:
+                if minus_one_finded:
+                    judge = False
+                    break
+                elif plus_one_finded:
+                    plus_one_finded = False
+                    changed = True
+                else:
+                    minus_one_finded = True
             else:
-                check = False
+                judge = False
                 break
-
-            if one_life:
-                one_life = False
-            else:
-                check = False
-                break
-    if check:
+        else:
+            judge = False
+            break
+    
+    if judge:
+        # print("plus 1")
         total_cnt += 1
+
+    # print()
+        
 
 print(total_cnt)
