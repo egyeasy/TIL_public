@@ -22,7 +22,10 @@ def bfs(s):
                 # 종결
                 if i == end:
                     print(mat[s][i] - visited[i])
-                    return
+                    for k in mat:
+                        print(k)
+                    print()
+                    print(visited)
 
 
 N, start, end = map(int, input().split())
@@ -32,9 +35,9 @@ for i in range(N - 1):
     mat[n_start][n_end] = n_dis
     mat[n_end][n_start] = n_dis
 
-# for i in mat:
-#     print(i)
-# print()
+for i in mat:
+    print(i)
+print()
 dq = deque()
 visited = [0] * (N + 1)
 former = [0] * (N + 1)
