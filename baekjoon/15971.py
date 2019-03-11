@@ -1,5 +1,5 @@
 import sys
-sys.stdin = open('15971_.txt', 'r')
+sys.stdin = open('15971.txt', 'r')
 
 from collections import deque
 
@@ -22,10 +22,11 @@ def bfs(s):
                 # 종결
                 if i == end:
                     print(mat[s][i] - visited[i])
-                    for k in mat:
-                        print(k)
-                    print()
-                    print(visited)
+                    return
+                    # for k in mat:
+                    #     print(k)
+                    # print()
+                    # print(visited)
 
 
 N, start, end = map(int, input().split())
@@ -35,13 +36,16 @@ for i in range(N - 1):
     mat[n_start][n_end] = n_dis
     mat[n_end][n_start] = n_dis
 
-for i in mat:
-    print(i)
-print()
+# for i in mat:
+#     print(i)
+# print()
 dq = deque()
 visited = [0] * (N + 1)
 former = [0] * (N + 1)
-bfs(start)
+if N <= 2:
+    print(0)
+else:
+    bfs(start)
 # print(former)
 
 # print()

@@ -1,5 +1,5 @@
 import sys
-sys.stdin = open('15971_.txt', 'r')
+sys.stdin = open('15971.txt', 'r')
 
 from collections import deque
 
