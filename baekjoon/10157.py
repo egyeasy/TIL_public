@@ -12,21 +12,33 @@ else:
     while total < target_num:
         total += 2 * (garo + sero - 2 * (2 * n - 1))
         n += 1
+    total -= 2 * (garo + sero - 2 * (2 * n - 1))
     n -= 1
-    # print(n, total)
-    point = [1 + n, n]
+    print(n, total)
+    point = [n, n]
 
     new_garo = garo - 2 * n + 1
     new_sero = sero - 2 * n + 1
     found = False
 
-    for i in range(new_garo - 1):
+    for i in range(new_sero):
+        print(point)
         if total == target_num:
             print(point[0], point[1])
             found = True
             break
         total -= 1
-        point[0] += 1
+        point[1] += 1
+
+    if not found:
+        for i in range(new_garo):
+            print(point)
+            if total == target_num:
+                print(point[0], point[1])
+                found = True
+                break
+            total -= 1
+            point[0] += 1
 
     if not found:
         for i in range(new_sero):
@@ -35,7 +47,7 @@ else:
                 found = True
                 break
             total -= 1
-            point[1] += 1
+            point[1] -= 1
 
     if not found:
         for i in range(new_garo):
@@ -46,14 +58,6 @@ else:
             total -= 1
             point[0] -= 1
 
-    if not found:
-        for i in range(new_sero):
-            if total == target_num:
-                print(point[0], point[1])
-                found = True
-                break
-            total -= 1
-            point[1] -= 1
 
     if not found and total == target_num:
         print(point[0], point[1])
