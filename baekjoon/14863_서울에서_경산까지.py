@@ -19,9 +19,10 @@ for i in range(N_cities):
     values[i][0] = [dobo_time, dobo_won]
     values[i][1] = [jajun_time, jajun_won]
 
-print(values)
+# print(values)
 
 # permutation
+max_won = 0
 for i in range(1 << N_cities):
     curr_time = 0
     curr_won = 0
@@ -32,8 +33,16 @@ for i in range(1 << N_cities):
             curr_won += values[j][1][1]
         else:
             # 0일 때 처리(도보)
-    
+            curr_time += values[j][0][0]
+            curr_won += values[j][0][1]
         # 시간이나 돈 넘칠 때 가지치기
+        if curr_time > K_time:
+            break
+    else:
+        if curr_won > max_won:
+            max_won = curr_won
+
+print(max_won)
 
 # idea
 # 1.
