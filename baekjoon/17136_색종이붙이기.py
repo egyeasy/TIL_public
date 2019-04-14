@@ -1,3 +1,5 @@
+global_min_cnt = 0
+
 def backtrack(s, cnt, one_cnt):
     global global_min_cnt
     s_i = s // 10
