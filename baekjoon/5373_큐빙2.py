@@ -2,6 +2,23 @@ import sys
 sys.stdin = open('5373.txt', 'r')
 
 
+class face:
+    def __init__(self, data, upper, downer, lefter, righter):
+        self.data = data
+        self.upper = upper
+        self.downer = downer
+        self.lefter = lefter
+        self.righter = righter
+
+#                                  data,  upper,   downer,   lefter,   righter
+up = face([['w'] * 3 for _ in range(3)], [1, 'd'], [2, 'u'], [4, 'u'], [5, 'u'])
+down = face([['y'] * 3 for _ in range(3)], [2, 'd'], [0, 'u'], [4, 'd'], [5, 'd'])
+front = face([['r'] * 3 for _ in range(3)], [0, 'd'], [1, 'u'], [4, 'r'], [5, 'l'])
+back = face([['o'] * 3 for _ in range(3)], [0, 'r'], [1, 'r'], [5, 'r'], [4, 'l'])
+left = face([['g'] * 3 for _ in range(3)], [0, 'l'], [1, 'l'], [3, 'r'], [2, 'l'])
+right = face([['b'] * 3 for _ in range(3)], [0, 'r'], [1, 'r'], [2, 'r'], [3, 'l'])
+
+
 def judge_change(comm):
     which_side = -1
     is_plus = -1
@@ -41,20 +58,7 @@ def do_change(side_num, is_plus):
         if side_num == 0:
             pass
         elif side_num == 2:
-            # 위 -> 오
-            this_edge = [current_cubic[5][i][0] for i in range(3)]
-            for i in range(3):
-                current_cubic[5][i][0] = current_cubic[0][2][i]
-            # 오 -> 아
-            former_edge = this_edge[:]
-            this_edge = [current_cubic[1][0][i] for i in range(3)]
-            for i in range(3):
-                current_cubic[1][0][i] = former_edge[i]
-            # 아 -> 왼
-            former_edge = this_edge[:]
-            this_edge = [current_cubic[4][i][2] for i in range(3)]
-            for i in range(3):
-                current_cubic[4][i][2] = None
+            pass
             
     else:
         pass
