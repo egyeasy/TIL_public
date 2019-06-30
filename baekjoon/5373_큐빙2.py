@@ -26,14 +26,26 @@ def rotate_the_face(the_face, is_plus):
     if is_plus:
         for i in range(3):
             for j in range(3):
-                new_side[j][2 - i] = the_cubic[the_face][i][j]
+                new_side[j][2 - i] = the_cubic[the_face].data[i][j]
     else:
         for i in range(3):
             for j in range(3):
-                new_side[2 - j][i] = the_cubic[the_face][i][j]
+                new_side[2 - j][i] = the_cubic[the_face].data[i][j]
     for i in range(3):
         for j in range(3):
-            the_cubic[the_face][i][j] = new_side[i][j]
+            the_cubic[the_face].data[i][j] = new_side[i][j]
+
+
+def extract_side(side_face, side_dir, is_plus):
+    
+    if is_plus:
+
+    else:
+        pass
+
+
+def rotate_sides(the_face, is_plus):
+    side_list = ['upper', ]
 
 
 def do_change(the_face, sign):
@@ -42,7 +54,7 @@ def do_change(the_face, sign):
     else:
         is_plus = False
     rotate_the_face(the_face, is_plus)
-
+    rotate_sides(the_face, is_plus)
 
 
 T = int(input())
