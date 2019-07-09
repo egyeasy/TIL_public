@@ -2,3 +2,5 @@
 */.vs/
 */.vscode/
 */venv/
+.idea/
+.vscode/

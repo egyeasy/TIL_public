@@ -39,7 +39,7 @@ def rotate_the_face(the_face, is_plus):
 def extract_side(side_face, side_dir, is_plus):
     
     if is_plus:
-
+        pass
     else:
         pass
 
