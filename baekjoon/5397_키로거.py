@@ -20,7 +20,7 @@ for tc in range(T):
             if cursor != first:
                 cursor = cursor.prev
         elif comm == '>':
-            if cursor != first:
+            if cursor.next != first:
                 cursor = cursor.next
         elif comm == '-':
             if cursor != first:
