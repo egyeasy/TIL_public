@@ -1,5 +1,5 @@
-# import sys
-# sys.stdin = open('./5397.txt', 'r')
+import sys
+sys.stdin = open('./5397.txt', 'r')
 
 class Number:
     def __init__(self, value=None, prev=None, next=None):
@@ -36,3 +36,4 @@ for tc in range(T):
     while print_cursor != first:
         print(print_cursor.value, end="")
         print_cursor = print_cursor.next
+    print()
