@@ -43,5 +43,4 @@ for stan_i in range(M_row - 7):
         if count < min_count:
             min_count = count
 
-# print(count_W, count_B)
 print(min_count)

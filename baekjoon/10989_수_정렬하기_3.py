@@ -2,13 +2,14 @@ import sys
 sys.stdin = open('10989.txt', 'r')
 
 N = int(input())
-nums = []
+counts = [0] * 10000
 
 for _ in range(N):
     num = int(input())
-    nums.append(num)
+    counts[num - 1] += 1
 
-nums.sort()
-
-for num in nums:
-    print(num)
+for i in range(N):
+    count = counts[i]
+    if count:
+        for _ in range(count):
+            print(i + 1)
