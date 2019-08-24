@@ -1,13 +1,14 @@
-#include "1-6-1.cpp"
+#include "functions.h"
+using namespace std;
 
 int main(void) {
     cout << "-----Menu------" << endl;
-    cout << "1. 계좌개설" << endl;
-    cout << "2. 입 금" << endl;
-    cout << "3. 출 금" << endl;
-    cout << "4. 계좌정보 전체 출력" << endl;
-    cout << "5. 프로그램 종료" << endl;
-    cout << "선택: ";
+    cout << "1. making account" << endl;
+    cout << "2. drawin" << endl;
+    cout << "3. drawout" << endl;
+    cout << "4. accounts info" << endl;
+    cout << "5. exit" << endl;
+    cout << "choose one: ";
 
     int number;
     cin >> number;
@@ -15,7 +16,7 @@ int main(void) {
     int accountId = 1;
     
     if (number == 1) {
-        createAccount();
+        createAccount(&accountId);
     } else if (number == 2) {
         send();
     } else if (number == 3) {
@@ -25,6 +26,8 @@ int main(void) {
     } else if (number == 5) {
         exit();
     } else {
-        cout << "똑바로 입력하세요." << endl;
+        cout << "plz type right" << endl;
     }
+
+    return 0;
 }
