@@ -245,7 +245,45 @@ cr.print();
 
 
 
-(28:00)
+## 벡터 구현
+
+### main.cpp
+
+```cpp
+#include <iostream>
+
+class Vector2D
+{
+public:
+	float x_, y_;
+
+	Vector2D()
+		: x_(0.0f), y_(0.0f)
+	{}
+
+	Vector2D(const float& _x, const float& _y)
+		: x_(_x), y_(_y)
+	{}
+
+	// over-riding stream operator
+	friend std::ostream & operator << (std::ostream& stream, const Vector2D& vec)
+	{
+		stream << "(" << vec.x_ << ", " << vec.y_ << ")";
+
+		return stream;
+	}
+};
+
+int main()
+{
+	Vector2D my_vec(1.0f, 2.0f);
+	std::cout << my_vec << std::endl;
+
+	return 0;
+}
+```
+
+
 
 
 
