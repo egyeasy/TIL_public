@@ -1,5 +1,11 @@
 # Week 2. Beginning OpenGL with GLFW
 
+## 개발환경 세팅
+
+https://webnautes.tistory.com/1102
+
+
+
 ## Polygon basics
 
 **Polygonized circle** - 원을 삼각형으로 분할하여 그려보자.
