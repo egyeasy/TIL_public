@@ -9,7 +9,7 @@ answer = []
 for command in record:
     sp_comm = list(command.split())
     # print("sp_comm: ", sp_comm)
-    if sp_comm[1] in users:
+    if sp_comm[1] in users: # 개선사항 - 이걸 Enter에서만 실시할 것
         if sp_comm[0] == 'Enter':
             # 모두 바꿔주기
             # for result in results:
