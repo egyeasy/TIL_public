@@ -16,7 +16,7 @@ namespace COMP_POS
         MANAGER
     };
 
-    void showClass(int pos);
+    void showClass(int pos);w
 }
 
 class NameCard
