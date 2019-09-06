@@ -1,6 +1,8 @@
 #include "functions.h"
 using namespace std;
 
+const int NAME_LEN = 20;
+
 void createAccount(int* accountId);
 void send();
 void drawOut();
@@ -39,9 +41,14 @@ int main(void) {
 }
 
 void createAccount(int* accountId) {
-    cout << "[계좌개설]" << endl;
-    *accountId += 1;
+    char name[NAME_LEN];
+    int deposit;
+    cout << "[Create Account]" << endl;
+    cout << "Account ID: " << *accountId << endl;
+    cout << "Name: "; cin >> name;
+    cout << "Deposit: "; cin >> deposit;
     
+    *accountId += 1;
     
 }
 

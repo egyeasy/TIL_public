@@ -213,6 +213,90 @@ Vec3은 12바이트. (4바이트x3) 이전에 비해 적으므로 union의 장�
 
 
 
+아래와 같은 방식으로 vector를 쓸 수 있다. 대략적인 가이드라인만 제시해본다.
+
+```c++
+#include <vector>
+
+    //Vector3 color[3] = {
+    //        Vector3(1.0, 0.0, 0.0),
+    //        Vector3(0.0, 1.0, 0.0),
+    //       Vector3(0.0, 0.0, 1.0)
+    //  }
+
+	std::vector<Vector3> colors;
+	colors.reserve(3);
+	colors[0].r_ = 1; // ...(something more)
+
+	// ... //
+
+	glEnableClientState(GL_COLOR_ARRAY);  // enable to use color array
+	glEnableClientState(GL_VERTEX_ARRAY); // enable to use vertext array
+
+	colors.data();
+
+	glColorPointer(3, GL_FLOAT, 0, color);   // send color array to GPU(dimension, 자료타입(float == GL_FLOAT), stride)
+	// stride : array 내에서 필요없는 element를 건너뛰기 위함. but harms performance a little bit
+	glVertexPointer(3, GL_FLOAT, 0, vertex); // send vertex array to GPU
+
+	glDrawArrays(GL_TRIANGLES, 0, 9); // (GLenum mode, array의 첫번째 index, element의 수)
+
+	glDisableClientState(GL_COLOR_ARRAY);
+	glDisableClientState(GL_VERTEX_ARRAY);
+```
+
+
+
+
+
+메모리를 얻기 위해서는
+
+```cpp
+float *my_array = new float[...];
+```
+
+
+
+마찬가지로 GLEW를 써서 GPU로 동일한 일을 할 수 있다.(vertex buffer object)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
