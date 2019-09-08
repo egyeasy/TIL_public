@@ -91,7 +91,7 @@ def solution(n, build_frame):
             elif grid[x][y+1] and grid[x][y+1][2] and bo_right_ok(x, y+1):
                 delete(x, y, is_bo)
             # 아무것도 없음
-            elif grid
+            elif grid:
                 delete(x, y, is_bo)
 
     
