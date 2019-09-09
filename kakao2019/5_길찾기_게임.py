@@ -1,18 +1,23 @@
+# 굳이 이진트리 만들 필요 없이 2차원 배열 만들어서 다 때려넣고 규칙에 따라 분기시켜서 dfs/순회하는 방법?
 nodeinfo = [[5, 3], [11, 5], [13, 3], [3, 5], [6, 1], [1, 3], [8, 6], [7, 2], [2, 2]]
+
+mat = []
 
 def arrange_node(node, former_nodes):
     for former in former_nodes:
-        if not mat[i][0]:
-            former_node = mat[i][2]
-            while former_node:
+        former
+        pass
+        # if not mat[i][0]:
+            # former_node = mat[i][2]
+            # while former_node:
                 # x가 크면 버리고
-                # former_node = 
-
+                # former_node 
                 # 작으면 
 
 
 def solution(nodeinfo):
     total_num = len(nodeinfo)
+    # 바로 좌측과 바로 우측의 번호도 기억시키는 것
     mat = [[0] * 3 for _ in range(total_num + 1)]
 
     nodeinfo.sort(key=lambda x: (-x[1], x[0]))
