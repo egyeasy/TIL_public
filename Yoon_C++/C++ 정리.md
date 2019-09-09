@@ -1,5 +1,11 @@
 # C++ 정리
 
+### Visual Studio Code 환경설정
+
+(2019.09.09 - MinGW 세팅까지만 해봄) http://blog.naver.com/PostView.nhn?blogId=suwon_man91&logNo=221382448285&parentCategoryNo=&categoryNo=11&viewDate=&isShowPopularPosts=true&from=search
+
+
+
 ### 헤더파일을 왜 만드는가?
 
 https://downman.tistory.com/6
