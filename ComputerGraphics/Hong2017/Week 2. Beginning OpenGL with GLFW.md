@@ -21,11 +21,11 @@ int main()
 
 	int width, height;
 	glfwGetFramebufferSize(window, &width, &height);
-	glViewpoint(0, 0, width, height);
+	glViewport(0, 0, width, height);
 
 	glOrtho(-1, 1, -1, 1, -1.0, 1.0);
 
-	while(*!glfwWindowShouldClose(window))
+	while(!glfwWindowShouldClose(window))
 	{
 		/* render here */
 		glClear(GL_COLOR_BUFFER_BIT);
