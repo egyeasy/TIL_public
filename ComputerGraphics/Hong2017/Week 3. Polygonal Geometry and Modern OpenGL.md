@@ -213,6 +213,8 @@ Vec3은 12바이트. (4바이트x3) 이전에 비해 적으므로 union의 장�
 
 
 
+# 두 번째 강의
+
 아래와 같은 방식으로 vector를 쓸 수 있다. 대략적인 가이드라인만 제시해본다.
 
 ```c++
@@ -233,7 +235,7 @@ Vec3은 12바이트. (4바이트x3) 이전에 비해 적으므로 union의 장�
 	glEnableClientState(GL_COLOR_ARRAY);  // enable to use color array
 	glEnableClientState(GL_VERTEX_ARRAY); // enable to use vertext array
 
-	colors.data();
+	colors.data(); // colors의 data에 접근할 수 있게 된다.
 
 	glColorPointer(3, GL_FLOAT, 0, color);   // send color array to GPU(dimension, 자료타입(float == GL_FLOAT), stride)
 	// stride : array 내에서 필요없는 element를 건너뛰기 위함. but harms performance a little bit
@@ -249,7 +251,9 @@ Vec3은 12바이트. (4바이트x3) 이전에 비해 적으므로 union의 장�
 
 
 
-메모리를 얻기 위해서는
+## GLEW
+
+OS에서 program으로 메모리 chunk를 전달해주기 위해서는
 
 ```cpp
 float *my_array = new float[...];
@@ -261,17 +265,100 @@ float *my_array = new float[...];
 
 
 
+```cpp
+/* Make the window's context current */
+glfwMakeContextCurrent(window);
+
+// 아래 내용을 doc 파일에서 복붙해온다 - Enable GLEW
+/* Make the window's context current */
+	glfwMakeContextCurrent(window);
+
+	// Initialize GLEW
+	glewExperimental = true; // Needed for core profile
+	if (glewInit() != GLEW_OK) {
+		fprintf(stderr, "Failed to initialize GLEW\n");
+		getchar();
+		glfwTerminate();
+		return -1;
+	}
+
+
+printf("%s\n", glGetString(GL_VERSION));
+
+glClearColor(102.0 / 255.0 ...)
+```
+
+glfw와 context window를 연결시켜준 다음 glfw를 가져온다.
+
+
+
+### Allocate memory in GPU
+
+```cpp
+	int num_vertices = 3;
+
+	//float *my_array = new float[...];
+
+	// 아래 내용을 복붙해온다.
+	GLuint vbo[3]; // GLuint는 unsigned int, 이미 pointer로 기능하고 있음(float*와 같다)
+	glGenBuffers(3, vbo); // vbo라는 pointer를 통해 메모리를 GPU에 전달 - 3개의 array를 쓸 수 있게 됨.
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]); // 첫 번째 array의 메모리를 잡아준다. buffer를 bind한다 -> data를 GPU 안의 이 array에게 전달하겠다
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * num_vertices * 3, colors, GL_STATIC_DRAW); // execute sending data - 9는 3 vertices(triangle). 또한 moving object를 생각하지 않으므로 GL_STATIC_DRAW
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 9, vertex, GL_STATIC_DRAW); // vertex(geometry data)를 GPU에 알려준다.
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLubyte) * 3, indices, GL_STATIC_DRAW);
+
+```
+
+GPU랑 통신을 해야하기 때문에 이런 방식으로 쓰는 것.
+
+bottleneck의 통신 양을 줄이기 위해 이런 스타일로 씀.
+
+그래서 보통 좋아하는 스타일을 class로 묶어서 재사용함 -> 하드코딩 된 숫자를 최소한으로 줄여야 한다.
 
 
 
 
 
+이에 따라 다음 부분이 필요없게 된다.
+
+![301](.\301.png)
 
 
 
+대신 다음을 써준다(doc에서 복붙)
+
+```cpp
+		//TODO: draw here
+		glBindBuffer(GL_ARRAY_BUFFER, vbo[0]); // bind buffer
+		glEnableClientState(GL_COLOR_ARRAY); // color 알려줌
+		glColorPointer(3, GL_FLOAT, 0, 0); // 이전 방식에서는 마지막 인자가 'colors'였으나, 우리가 이미 GPU에 보내줬으므로 0으로 쓴다.
+
+		glBindBuffer(GL_ARRAY_BUFFER, vbo[1]); // bind buffer
+		glEnableClientState(GL_VERTEX_ARRAY); // vertex position
+		glVertexPointer(3, GL_FLOAT, 0, 0); // 이전에는 'vertex'로 전달해줬으나, 지금은 위에서 전달해줬으므로 여기서 전달해줄 필요가 없다. - pipeline performance 상승.
+
+		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[2]);
+		//glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_BYTE, 0);
+
+		glDrawArrays(GL_TRIANGLES, 0, 9); // 이 부분은 위에서 그대로 가져와서 쓴다.
+
+		glDisableClientState(GL_COLOR_ARRAY);
+		glDisableClientState(GL_VERTEX_ARRAY);
+
+```
 
 
 
+이렇게 함으로써 data를 GPU에서 reuse 할 수 있다.
+
+
+
+(20:12)
 
 
 
