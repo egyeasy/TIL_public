@@ -259,15 +259,218 @@ int main()
 
 # 1.4 입출력 스트림과의 첫 만남 cin, cout
 
+### 출력
+
+```cpp
+#include <iostream>
+#include <cstdio>
+
+int main()
+{
+	int x = 1024;
+	double pi = 3.141592;
+
+	std::cout << "I love this lecture!";
+	std::cout << "x is " << x << " pi is " << pi << std::endl;
+
+	std::cout << "abc" << "\t" << "def" << std::endl;
+	std::cout << "ab" << "\t" << "cdef" << std::endl;
+
+	return 0;
+}
+```
+
+`\t`는 글자 간 간격을 알아서 조절해주는 탭이다.
+
+`\n`도 줄바꿈에 해당
+
+
+
+`std::`를 쓰기 귀찮다면
+
+```cpp
+#include <iostream>
+#include <cstdio>
+
+int main()
+{
+	using namespace std;
+
+```
+
+
+
+다음은 오디오를 출력
+
+```cpp
+cout << "\a";
+```
 
 
 
 
 
+### 입력받기
+
+입력받은 데이터를 저장할 수 있는 변수를 미리 선언해야 한다.
 
 
 
 
+
+# 1.6 키워드와 식별자 이름짓기
+
+cpp의 키워드 = 예약어(reserved)
+
+변수명, 함수명을 지을 때 해당 이름을 사용하면 안 됨.
+
+`n_apples`와 같이 언더스코어를 사용하여 단어끼리 분리하는 경우가 많다.
+
+
+
+
+
+# 1.7  지역 범위
+
+```cpp
+#include <iostream>
+
+int main()
+{
+	int x = 0;
+
+	{
+		int x = 1;
+	}
+
+	{
+		int x = 2;
+	}
+}
+```
+
+이게 가능하다. main 함수 중괄호 안에 다른 중괄호가 있으면 서로 다른 공간이 됨 -> 다른 메모리에 대한 식별자.
+
+
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+	int x = 0;
+	cout << x << " " << &x << endl;
+
+	{
+		int x = 1;
+		cout << x << " " << &x << endl;
+	}
+
+	{
+		int x = 2;
+		cout << x << " " << &x << endl;
+	}
+}
+```
+
+첫번째 `&x`와 두번째 `&x`는 서로 다르다.
+
+
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+	int x = 0;
+
+	cout << x << " " << &x << endl;
+
+	{
+		//int x = 1;
+		x = 1;
+		cout << x << " " << &x << endl;
+
+	}
+
+	cout << x << " " << &x << endl;
+
+}
+```
+
+모두 같은 주소를 반환한다.
+
+
+
+
+
+과제 : 다음 코드는 무엇을 반환하는가?
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+void doSomething(int x)
+{
+	x = 123;
+	cout << x << endl; // #2
+}
+
+
+int main()
+{
+	int x = 0;
+
+	cout << x << endl; // #1
+	doSomething(x);
+	cout << x << endl; // #3
+
+	return 0;
+
+}
+```
+
+
+
+
+
+# 1.8 연산자와의 첫 만남
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+	int x = 2;  // x is a variable, 2 is a literal.
+
+	cout << x + 2 << endl; // + is an operator, x and 2 are 피연산자
+
+	cout << "adfewf" << endl;
+
+	return 0;
+}
+```
+
+
+
+단항 연산자: `-x`, `-2`
+
+이항 연산자: `1 + 2`
+
+삼항 연산자 - 조건 연산자로, C++ 언어의 유일한 삼항 연산자.
+
+```cpp
+int y = (x > 0) ? 1 : 2;
+```
+
+참이면 왼쪽, 거짓이면 오른쪽
 
 
 
