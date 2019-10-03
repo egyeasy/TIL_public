@@ -1,34 +1,21 @@
-# 동적계획법에 해당하는 문제 - 내가 DFS라고 생각하고 있었음
+# 동적계획법에 해당하는 문제
 
 import sys
 sys.stdin = open('1149.txt', 'r')
 
-def DFS(idx, color, t_cost):
-    global min_cost
-    if idx == N:
-        if t_cost < min_cost:
-            min_cost = t_cost
-        return
-    for i in range(3):
-        if i != color:
-            current_cost = t_cost + costs[idx][i]
-            if not visited[idx]:
-                DFS(idx + 1, i, t_cost + costs[idx][i])
-            elif i in visited[idx] and current_cost < min_cost:
-                DFS(idx + 1, i, t_cost + costs[idx][i])
-
-
 N = int(input())
 costs = []
+costs.append([0, 0, 0])
+
 for i in range(N):
     cost = tuple(map(int, sys.stdin.readline().split()))
     costs.append(cost)
 
-total_cost = 0
-min_cost = 1000 * 1000
-visited = [[] for _ in range(N + 1)]
+total_costs = [[0] * 3 for _ in range(N + 1)]
 
-for i in range(3):
-    DFS(0, i, total_cost)
+for i in range(1, N + 1):
+    total_costs[i][0] = min(total_costs[i - 1][1], total_costs[i - 1][2]) + costs[i][0]
+    total_costs[i][1] = min(total_costs[i - 1][0], total_costs[i - 1][2]) + costs[i][1]
+    total_costs[i][2] = min(total_costs[i - 1][0], total_costs[i - 1][1]) + costs[i][2]
 
-print(min_cost)
+print(min(min(total_costs[N][0], total_costs[N][1]), total_costs[N][2]))
