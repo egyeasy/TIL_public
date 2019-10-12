@@ -1,3 +1,5 @@
+# 시간초과
+
 import sys
 sys.stdin = open('1966.txt', 'r')
 
