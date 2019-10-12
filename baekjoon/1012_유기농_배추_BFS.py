@@ -1,3 +1,5 @@
+# 시간 초과
+
 import sys
 from collections import deque
 sys.stdin = open('1012.txt', 'r')

@@ -1,3 +1,5 @@
+# DFS로 통과
+
 import sys
 from collections import deque
 sys.stdin = open('1012.txt', 'r')
