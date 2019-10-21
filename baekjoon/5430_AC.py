@@ -6,11 +6,11 @@ TC = int(input())
 for tc in range(TC):
     comms = sys.stdin.readline().rstrip()
     N = int(input())
+
+    nums = sys.stdin.readline().rstrip()[1:-1].split(',')
+    
     if N == 0:
         nums = []
-    else:
-        nums = sys.stdin.readline().rstrip()[1:-1].split(',')
-    # print(comms, nums)
 
     dq = deque()
 
