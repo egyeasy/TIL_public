@@ -64,6 +64,75 @@ z += y; // z = z + y;
 
 
 
+## 3.3 증감 연산자 increment decrement operators
+
+```cpp
+using namespace std;
+
+int x = 5;
+int y = ++x;
+int z = x--;
+
+cout << y << endl; // 4
+cout << z << endl; // 4
+
+return 0;
+```
+
+
+
+다음부터가 중요한 얘기
+
+```cpp
+int x = 6, y = 6;
+cout << x << " " << y << endl; // 6 6
+// cout << ++x << " " << --y << endl; // 7 5
+cout << x++ << " " << y-- << endl; // 6 6
+cout << x << " " << y << endl; // 7 5
+```
+
+x++, y--는 출력한 다음에 연산을 적용하는 개념
+
+
+
+부작용이 될 수 있는 경우를 알아보자
+
+```cpp
+int add(int a, int b)
+{
+    return a + b;
+}
+
+int main()
+{
+    using namespace std;
+    
+    int x = 1;
+    int v = add(x, ++x); // do not use like this - 다른 변수 y를 만들어서 ++y로 넣는 것은 괜춘
+    
+    cout << v << endl;
+    
+    return 0;
+}
+```
+
+
+
+```cpp
+int main()
+{
+    using namespace std;
+    
+    int x = 1;
+    // x = x++; // 결과가 명확하지 않다
+    ++x;
+    
+    cout << x << endl;
+    
+    return 0;
+}
+```
+
 
 
 
