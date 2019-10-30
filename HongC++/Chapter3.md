@@ -461,6 +461,285 @@ int getPrice(bool onSale)
 
 ## 3.7 이진수 Binary Numbers
 
+### binary to decimal
+
+### decimal to binary
+
+방법 1: 2로 계속 나눠서 나머지를 추려낸다.
+
+방법 2: 1 2 4 8 ... 중에서 N보다 작거나 같은 수 중에 가장 큰 수를 N에서 빼가면서 자릿수를 구한다.
+
+### 이진수 덧셈
+
+### 음의 정수를 이진수로 어떻게 바꿀까
+
+- -5를 바꿔보자
+
+1. 5의 이진수는 0000 0101
+2. 보수(complement) : 1111 1010
+3. 1을 더한다 : 1111 1011
+
+맨앞자릿 수는 +인지 -인지를 나타냄.
+
+
+
+- 1001 1110(-98)을 바꿔보자
+
+1. 0110 0001
+2. 0110 0010 -> 98
+
+
+
+### signed vs unsigned
+
+1001 1110 = 128 + 16 + 8 + 4 + 2 (unsigned)
+
+​					 -128 + 16 + 8 + 4 + 2 (signed)
+
+
+
+
+
+## 3.8 비트단위 연산자 Bitwise Operators 컴퓨터 작동원리
+
+메모리의 주소를 줄 수 있는 단위가 바이트 단위.
+
+메모리 주소 하나는 최소 1바이트다.
+
+1. 데이터를 꽉꽉 채워넣기 위해 사용.
+
+2. 계산 속도가 빠름
+
+
+
+// << left shift
+// >> right shift
+// ~, &, |, ^ bitwise not, and, or, xor
+
+
+
+비트마스크, 게임 프로그래밍 등 빠른 프로그래밍을 할 때 필수적임.
+
+
+
+```cpp
+#include <iostream>
+#include <bitset>
+
+int main()
+{
+	using namespace std;
+
+	unsigned int a = 3;
+
+	// 어떻게 내부적으로 저장되는지 보고 싶다면
+	cout << std::bitset<4>(a) << endl; // 0011
+
+	unsigned int b = a << 1; // left shift
+
+	cout << std::bitset<4>(b) << endl; // 0110
+}
+```
+
+
+
+```cpp
+	b <<= 2; // * 2**2
+
+	cout << b << endl;
+
+	cout << (a << 1) << endl; // cout 내에서 shift 하려면 괄호 필요
+```
+
+
+
+2의 n제곱을 계산할 때 power보다 훨씬 빠르다.
+
+
+
+### Right shift
+
+```cpp
+	unsigned int c = 1024;
+
+	cout << std::bitset<16>(c) << endl;
+
+	// right shift
+	cout << std::bitset<16>(c >> 1) << " " << (c >> 1) << endl; // 512
+	cout << std::bitset<16>(c >> 2) << " " << (c >> 2) << endl; // 256
+	cout << std::bitset<16>(c >> 3) << " " << (c >> 3) << endl; // 128
+	cout << std::bitset<16>(c >> 4) << " " << (c >> 4) << endl; // 64
+
+	// not
+	cout << std::bitset<16>(~c) << " " << (~c) << endl; // 1 0이 뒤집혀서 나옴
+```
+
+
+
+### 이항 연산자 AND, OR, XOR
+
+```cpp
+	// 이진수 int
+	unsigned int d = 0b1100;
+	unsigned int e = 0b0110;
+
+	cout << std::bitset<4>(a & b) << endl; // bitwise AND
+	cout << std::bitset<4>(a | b) << endl; // bitwise OR
+	cout << std::bitset<4>(a ^ b) << endl; // bitwise XOR
+```
+
+
+
+
+
+## 3.9 비트 플래그, 비트 마스크 사용법 Bit Flags, Bit masks
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+	bool item1_flag = false;
+	bool item2_flag = false;
+	bool item3_flag = false;
+	bool item4_flag = false;
+
+	
+
+	return 0;
+}
+```
+
+flag를 직접 바꿔가면서 작업하기에는 불편함이 따른다. item 확장성도 떨어짐
+
+
+
+### 비트 플래그
+
+변수 하나만 써서 flag들을 조정해보자.
+
+
+
+```cpp
+#include <iostream>
+#include <bitset>
+
+using namespace std;
+
+int main()
+{
+	// 비트 플래그
+	unsigned char items_flag = 0;
+
+	cout << bitset<8>(items_flag) << endl;
+
+	return 0;
+}
+```
+
+
+
+```cpp
+	// 비트 플래그
+	unsigned char items_flag = 0;
+	cout << bitset<8>(items_flag) << endl;
+
+	const unsigned char opt0 = 1 << 0;
+	const unsigned char opt1 = 1 << 1;
+	const unsigned char opt2 = 1 << 2;
+	const unsigned char opt3 = 1 << 3; // 실질적 계산은 없지만 규칙성을 위해 0 shift
+	cout << bitset<8>(opt0) << endl;
+
+	cout << "No item " << bitset<8>(items_flag) << endl;
+
+	// item0 on
+	items_flag |= opt0;
+	cout << "Item0 obtained " << bitset<8>(items_flag) << endl;
+
+	// item3 on
+	items_flag |= opt3;
+	cout << "Item3 obtained " << bitset<8>(items_flag) << endl;
+
+	// item3 lost
+	items_flag &= ~opt3;
+	cout << "Item3 lost " << bitset<8>(items_flag) << endl;
+
+	// has item1 ?
+	if (items_flag & opt1) {
+		cout << "Has item1 " << endl;
+	}
+	else {
+		cout << "Not has item1" << endl;
+	}
+
+	// has item0 ?
+	if (items_flag & opt0) { cout << "Has item0" << endl; }
+
+	// obtain item 2, 3
+	items_flag |= (opt2 | opt3);
+	cout << bitset<8>(opt2 | opt3) << endl;
+	cout << "Item2, 3 obtained " << bitset<8>(items_flag) << endl;
+
+
+	// 2를 갖고 있고 1을 갖고 있지 않을 경우
+	if ((items_flag & opt2) && !(items_flag & opt1))
+	{
+		//items_flag ^= opt2; // 상태를 바꿔주는 명령은 XOR
+		//items_flag ^= opt1;
+		items_flag ^= (opt1 | opt2);
+	}
+
+	cout << bitset<8>(items_flag) << endl;
+```
+
+OpenGL 등의 변수에서 비트 플래그를 쓰면 편하다.
+
+
+
+
+
+### 비트 마스크
+
+컬러맵을 예시로 보자.
+
+```cpp
+	unsigned int pixel_color = 0xDAA520;
+	cout << std::bitset<32>(pixel_color) << endl;
+
+	// red(green, blue)에 해당하는 DA만 출력하고 싶다면?
+	const unsigned int red_mask = 0xFF0000;
+	const unsigned int green_mask = 0x00FF00;
+	const unsigned int blue_mask = 0x0000FF;
+
+	// blue만 추출해보자
+	unsigned char blue = pixel_color & blue_mask;
+	cout << "blue " << bitset<8>(blue) << " " << int(blue) << endl; // 00100000 32
+
+	//unsigned char green = pixel_color & green_mask;
+	unsigned int green = (pixel_color & green_mask) >> 8; // blue 8자리까지 같이 나오므로 right shift해야 green만 추출 가능
+	cout << "green " << bitset<8>(green) << " " << int(green) << endl; // 00000000 출력됨. char로 받아서 size가 부족한 것.
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
