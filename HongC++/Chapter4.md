@@ -860,6 +860,241 @@ static_cast로 int로 강제변환해서 비교할 수는 있다.
 
 
 
+## 4.9 자료형에게 가명 붙여주기 Type aliases
+
+```cpp
+#include <iostream>
+#include <vector>
+
+int main()
+{
+	typedef double distance_t;
+
+	return 0;
+}
+```
+
+double을 거리라는 개념으로 쓰려고 정의. _t는 타입 이름이라는 표시. 컴파일러 입장에선 같은 걸로 인식되고, 프로그래밍 편의를 위한 도구임.
+
+
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <cstdint>
+
+int main()
+{
+	typedef double distance_t;
+
+	std::int8_t i(97); // 고정너비 정수 - 가명 만들어준 것이라고 보면 됨
+
+	double		my_distance;
+	distance_t  home2work;
+
+	return 0;
+}
+```
+
+
+
+```
+	typedef vector<pair<string, int>> pairlist_t;
+	// 또는
+	using pairlist_t = vector<pair<string, int> >;
+
+	vector<pair<string, int>> pairlist1;
+	pairlist_t				  pairlist2;
+```
+
+두 가지 방식으로 구현 가능
+
+
+
+
+
+## 4.10 구조체 struct
+
+```cpp
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+// void printPerson(double height, float weight, ...) // 직접 다 넣기에는 부담.
+
+int main()
+{
+	double	height;
+	float	weight;
+	int		age;
+	string	name;
+
+	return 0;
+}
+```
+
+객체마다 instantiate 하는 것도 번거로움
+
+
+
+```cpp
+struct Person
+{
+	double	height;
+	float	weight;
+	int		age;
+	string	name;
+};
+
+void printPerson(Person ps)
+{
+	cout << ps.height << " " << ps.weight << " " << ps.age << " " << ps.name;
+	cout << endl;
+}
+
+	Person me{ 2.0, 100.0, 20, "Jack Jack" };
+	// 이렇게 치기엔 부담스러움
+	/*me.age = 20;
+	me.name = "Jack Jack";
+	me.height = 2.0;
+	me.weight = 100.0;*/
+
+	printPerson(me);
+```
+
+
+
+함수를 구조체 안에서 정의할 수도 있다.
+
+이 때 인자를 없애도 됨.
+
+```cpp
+struct Person
+{
+	double	height;
+	float	weight;
+	int		age;
+	string	name;
+
+	void print()
+	{
+		cout << height << " " << weight << " " << age << " " << name;
+		cout << endl;
+	}
+};
+
+
+	me.print();
+```
+
+
+
+### assignment
+
+```cpp
+	me.print();
+
+	Person me2(me);
+	me2.print();
+
+	Person me3 = me;
+	me3.print();
+```
+
+다 같은 결과를 print
+
+
+
+### 구조체 안에 구조체
+
+```cpp
+struct Family
+{
+	Person me, mom, dad;
+};
+```
+
+
+
+### get 구조체
+
+```cpp
+Person getMe()
+{
+	Person me{ 2.0, 100.0, 20, "Jack Jack" };
+
+	return me;
+}
+
+
+	Person me_from_func = getMe();
+	me_from_func.print();
+```
+
+
+
+
+
+### 초기화 문제
+
+```cpp
+struct Person
+{
+	double	height = 3.0;
+	float	weight = 200.0;
+	int		age = 100;
+	string	name = "Mr. Incredible";
+
+	void print()
+	{
+		cout << height << " " << weight << " " << age << " " << name;
+		cout << endl;
+	}
+};
+
+
+Person getMe()
+{
+	Person me{ 2.0, 100.0, 20, "Jack Jack" };
+
+	return me;
+}
+```
+
+default 값을 지정해줄 수 있지만 직접 넣어주면 넣어준 게 우선됨.
+
+
+
+### padding
+
+```cpp
+struct Employee		// 2 + (2) + 4 + 8 = 16 bytes
+{
+	short	id;		// 2 bytes
+	int		age;	// 4 bytes
+	double	wage;	// 8 bytes
+};
+
+	cout << sizeof(Employee) << endl; // 16
+```
+
+16으로 나옴. 이건 2바이트를 처리하기 어려워서 빈칸 2바이트가 배치되기 때문임. data size structure에 대해 알아볼 것. padding이라고 함.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
