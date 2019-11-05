@@ -81,6 +81,185 @@ C++에서는 동적 할당을 주로 쓴다.
 
 
 
+## 6.2 배열 기초 array
+
+### 주소 출력
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+	const int num_students = 20;
+
+	int students_scores[num_students];
+
+	cout << (int)&students_scores << endl;			// +0
+	cout << (int) & (students_scores[0]) << endl;	// +0
+	cout << (int) & (students_scores[1]) << endl;	// +4
+	cout << (int) & (students_scores[2]) << endl;	// +8
+	cout << (int) & (students_scores[3]) << endl;	// +12
+
+	cout << sizeof(students_scores)
+}
+```
+
+
+
+### 함수 인자로 배열 전달 가능
+
+```cpp
+void doSomething(int students_scores[20])
+{
+	cout << students_scores[0] << endl;
+	cout << students_scores[1] << endl;
+	cout << students_scores[2] << endl;
+    
+	cout << (int)&students_scores << endl;
+	cout << "size: " << sizeof(students_scores) << endl;
+
+}
+
+int main()
+{
+	const int num_students = 20;
+
+	int students_scores[num_students] = { 1, 2, 3, 4, 5 };
+
+	cout << "size: " << sizeof(students_scores) << endl;
+    
+	doSomething(students_scores); // 함수의 인자로 전달 가능
+
+	return 0;
+}
+```
+
+but 실제 주소는 함수 안에서 출력했을 때와 다르다. 복사를 해서 넣기 때문. 속도의 문제가 발생할 수 있다.
+
+
+
+```cpp
+void doSomething(int students_scores[]) // size 표시하지 않아도 됨
+```
+
+
+
+
+
+## 6.3 배열과 반복문
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+	const int num_students = 5;
+	int scores[num_students] = { 84, 92, 76, 81, 56 };
+
+	int total_score = 0;
+	int max_score = 0;
+
+	for (int i = 0; i < num_students; i++)
+	{
+		total_score += scores[i];
+		max_score = (max_score < scores[i]) ? scores[i] : max_score;
+	}
+
+	double avg_score = static_cast<double>(total_score) / num_students;
+
+	cout << avg_score << endl;
+
+	const int num_stdts = sizeof(scores) / sizeof(int); // 로 개수를 알아낼 수도 있다.
+
+	cout << "max score: " << max_score << endl;
+}
+```
+
+
+
+
+
+## 6.4 배열과 선택 정렬 selection sort
+
+왼쪽으로 오른쪽으로 가면서 제일 작은 숫자를 찾아서 맨 왼쪽으로 옮겨주는 정렬
+
+
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+    
+    const int length = 5;
+}
+```
+
+
+
+
+
+### 내가 쓴 답안
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+void printArray(int array[], int length)
+{
+	for (int index = 0; index < length; index++)
+		cout << array[index] << " ";
+	cout << endl;
+}
+
+int main()
+{
+
+	const int length = 5;
+
+	int array[length] = { 3, 5, 2, 1, 4 };
+
+	printArray(array, length);
+
+
+	for (int start = 0; start < length; start++)
+	{
+		int min_idx = start;
+		for (int i = start; i < length; i++)
+		{
+			if (array[i] < array[min_idx])
+			{
+				min_idx = i;
+			}
+		}
+		int copy = array[start];
+		array[start] = array[min_idx];
+		array[min_idx] = copy;
+	}
+
+	printArray(array, length);
+
+
+}
+```
+
+
+
+
+
+
+
+
+
+
+
 
 
 
