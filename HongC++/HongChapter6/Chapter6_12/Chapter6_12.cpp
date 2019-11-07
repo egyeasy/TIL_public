@@ -35,6 +35,10 @@ int main()
 
 	delete[] array2;
 
+	// resizing
+	
+
+
 	return 0;
 
 }
