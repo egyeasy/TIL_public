@@ -589,6 +589,709 @@ struct Something
 
 
 
+## 6.7a 널 포인터 Null Pointer
+
+```cpp
+#include <iostream>
+
+int main()
+{
+	double* ptr = 0; // c-style
+	double* ptr2 = NULL;
+	double* ptr3 = nullptr; // modern c++
+	// double *ptr{ nullptr } // uniform initialization 가능
+
+	if (ptr3 != nullptr)
+	{
+		// do something useful
+	}
+	else
+	{
+		// do nothing with ptr
+	}
+
+}
+```
+
+
+
+`nullptr`이 함수 인자로 넘어갈 때 유용하다
+
+
+
+```cpp
+#include <iostream>
+
+void doSomething(double* ptr)
+{
+	if (ptr != nullptr)
+	{
+		// do something useful
+		std::cout << *ptr << std::endl;
+	}
+	else
+	{
+		// do nothing with ptr
+		std::cout << "Null ptr, do nothing" << std::endl;
+	}
+
+}
+
+int main()
+{
+	double* ptr = 0; // c-style
+	double* ptr2 = NULL;
+	double* ptr3 = nullptr; // modern c++
+	// double *ptr{ nullptr } // uniform initialization 가능
+
+	if (ptr3 != nullptr)
+	{
+		// do something useful
+	}
+	else
+	{
+		// do nothing with ptr
+	}
+
+	doSomething(ptr3);
+	doSomething(nullptr);
+
+	double d = 123.4;
+	doSomething(&d);
+
+	ptr = &d;
+
+	doSomething(ptr);
+
+	return 0;
+
+}
+```
+
+
+
+### nullptr_t
+
+```cpp
+#include <cstddef>
+
+std::nullptr_t nptr; // null pointer밖에 못넣는다.
+```
+
+
+
+
+
+### 포인터 변수의 주소
+
+```cpp
+void doSomething(double* ptr)
+{
+	std::cout << "address of pointer variable in function: " << &ptr << std::endl;
+
+	if (ptr != nullptr)
+	{
+		// do something useful
+		std::cout << *ptr << std::endl;
+	}
+	else
+	{
+		// do nothing with ptr
+		std::cout << "Null ptr, do nothing" << std::endl;
+	}
+
+}
+
+	doSomething(ptr3);
+
+	std::cout << "address of pointer variable in main: " << &ptr3 << std::endl;
+```
+
+서로 다르게 나온다. 함수에서 쓸 때 값을 복사해가기 때문.
+
+
+
+
+
+## 6.8 포인터와 정적 배열
+
+포인터와 배열은 같다.
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+	int array[5] = { 9, 7, 5, 3, 1 };
+
+	cout << array << endl;
+
+	cout << &(array[0]) << endl; // array 0번째 index의 요소의 주소
+
+	return 0;
+}
+```
+
+둘은 같다. array는 사실 첫 번째 요소의 주소를 가지고 있는 것
+
+
+
+### de-reference
+
+```cpp
+	cout << *array << endl; // 9
+
+
+	char name[] = "jackjack";
+	cout << *name << endl; // j
+```
+
+
+
+### 포인터 변수
+
+```cpp
+	int* ptr = array;
+	cout << ptr << endl;
+	cout << *ptr << endl;
+```
+
+결과가 같게 나온다.
+
+
+
+배열은 포인터와 같은 느낌이지만 좀 더 편하게 쓸 수 있게 해주는 기능들이 있는 것.
+
+
+
+```cpp
+	cout << sizeof(array) << endl; // 20
+
+	cout << sizeof(ptr) << endl; // 4
+```
+
+ptr은 ptr 주소가 차지하는 공간이 4바이트라서.
+
+
+
+### 문제가 될 경우 - 함수 파라미터로 전달될 때
+
+```cpp
+void printArray(int array[]) // int *array와 결과가 같다
+{
+	cout << sizeof(array) << endl; // 4
+}
+
+
+
+	printArray(array);
+```
+
+함수에 전달될 때는 포인터로 전달됨.
+
+
+
+```cpp
+void printArray(int array[]) // int *array와 결과가 같다
+{
+	cout << sizeof(array) << endl; // 4
+
+	*array = 100;
+}
+
+
+	printArray(array);
+
+	cout << array[0] << endl;
+
+```
+
+100이 출력. 변수에 접근할 수 있다.
+
+
+
+### 포인터 연산
+
+```cpp
+cout << *ptr << " " << *(ptr + 1) << endl; // 포인터 연산
+```
+
+배열의 다음 숫자 출력
+
+
+
+### Struct
+
+```cpp
+struct MyStruct
+{
+	int array[5] = { 9, 7, 5, 3, 1 };
+};
+
+void doSth(MyStruct ms)
+{
+	cout << sizeof(ms.array) << endl; // 20 - array 사이즈가 나옴
+}
+	MyStruct ms;
+	doSth(ms);
+```
+
+제대로 나온다.
+
+ms가 포인터로 전달되어도 같음
+
+```cpp
+void doSth(MyStruct *ms) // pointer
+{
+	// de-reference
+	cout << sizeof((*ms).array) << endl; // 20 - array 사이즈가 나옴
+}
+
+	// struct
+	MyStruct ms;
+	doSth(&ms); // address
+```
+
+
+
+
+
+## 6.9 포인터 연산과 배열 인덱싱
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+	int value = 7;
+	int* ptr = &value;
+
+	cout << uintptr_t(ptr - 1) << endl;
+	cout << uintptr_t(ptr) << endl;
+	cout << uintptr_t(ptr + 1) << endl;
+	cout << uintptr_t(ptr + 2) << endl;
+	return 0;
+}
+```
+
+4씩 바뀐다.  int 사이즈에 따라 증가 감소하게 됨
+
+double로 설정하면 8씩 바뀜.
+
+
+
+### array
+
+```cpp
+	int array[] = { 9, 7, 5, 3, 1 };
+
+	cout << array[0] << " " << (uintptr_t) & array[0] << endl;
+	cout << array[1] << " " << (uintptr_t) & array[1] << endl;
+	cout << array[2] << " " << (uintptr_t) & array[2] << endl;
+	cout << array[3] << " " << (uintptr_t) & array[3] << endl;
+	cout << array[4] << " " << (uintptr_t) & array[4] << endl;
+```
+
+4씩 증가함을 볼 수 있다.
+
+
+
+```cpp
+	int* ptr2 = array;
+	for (int i = 0; i < 5; i++)
+	{
+		cout << *(ptr2 + i) << " " << (uintptr_t)(ptr2 + i) << endl;
+	}
+
+```
+
+포인터로 접근해도 같은 결과
+
+
+
+### 문자열
+
+```cpp
+	char name[] = "jack jack";
+	const int n_name = sizeof(name) / sizeof(name[0]);
+
+	cout << endl;
+
+	for (int i = 0; i < n_name; i++)
+	{
+		cout << *(name + i); // jack jack
+	}
+```
+
+array 타입의 name에 포인터 연산을 그대로 적용해도 됨.
+
+
+
+### while문으로 출력
+
+```cpp
+	char* ptr3 = name;
+
+	while (true)
+	{
+		if (*ptr3 == '\0')
+			break;
+		cout << *(ptr3++);
+	}
+```
+
+https://stackoverflow.com/questions/14544043/operand-types-are-incompatible-char-and-const-char
+
+Double quotes are the shortcut syntax for a *c-string* in C++. If you want to compare a single character, you must use single quotes instead. You can simply change your code to this:
+
+```
+char userInput_Text[3];
+
+if (userInput_Text[1] == 'y') { // <-- Single quotes here.
+    // Do stuff.
+}
+```
+
+For reference:
+
+- `"x"` = `const char *`
+- `'x'` = `char`
+
+
+
+
+
+## 6.10 C언어 스타일의 문자열 심볼릭 상수
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+	//char name[] = "Jack Jack";
+	//char* name = "Jack Jack"; // 이건 빌드가 안 됨. Jack Jack은 리터럴임. 어디에 담을지가 명시되어있지 않음
+	const char* name = "Jack Jack"; // 이건 가능
+	const char* name2 = "Jack Jack";
+
+	cout << (uintptr_t)name << endl;
+	cout << (uintptr_t)name2 << endl;
+}
+```
+
+주소가 같게 나온다. 컴파일러가 두 개 같은 걸 알고 주소를 공유하라고 한 것. 서로 다른 문자열을 넣으면 다른 주소가 나온다. 
+
+const를 붙여야 기호적 상수로 쓸 수 있다는 것을 유의할 것.
+
+
+
+```cpp
+const char* getName()
+{
+	return "JackJack";
+}
+```
+
+return으로도 가능
+
+
+
+### 문자열 출력
+
+```cpp
+	int int_arr[5] = { 1, 2, 3, 4, 5 };
+	char char_arr[] = "Hello, World!";
+	const char* name3 = "Jack Jack";
+
+	cout << int_arr << endl;
+	cout << char_arr << endl;
+	cout << name3 << endl;
+```
+
+```cpp
+004FF72C
+Hello, World!
+Jack Jack
+```
+
+포인터(주소)를 출력했음에도 문자열 전체를 출력해준다 -> cout에서 문자열 출력을 독특하게 처리한다. 문자의 pointer가 들어오면 문자열일 것이라고 간주함.
+
+
+
+### 문자 하나만
+
+```cpp
+	char c = 'Q';
+	cout << &c << endl;
+
+```
+
+```txt
+Q儆儆儆儆<쎱
+```
+
+컴파일러가 문자열일 것이라 예상하고 null 문자가 나올 때까지 계속해서 출력하게 된다. 
+
+
+
+
+
+## 6.11 메모리 동적 할당 new와 delete
+
+1. static memory allocation - 한번 만들면 프로그램이 끝날 때까지 메모리를 갖고 있는 것
+
+2. 자동 메모리 할당 - 블록 밖으로 나가면 사라짐
+
+3. 동적 메모리 할당 - 포인터와 관련지어 가장 까다로운 부분
+
+
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+	int array[1000000]; // stack
+
+	
+
+	return 0;
+}
+```
+
+정적으로 할당된 것은 스택에 들어가는데, 스택은 크기가 작다. 따라서 빌드하면 안 됨.
+
+동적 할당 된 것은 heap에 들어가는데, 여기에 많이 들어갈 수 있다.
+
+
+
+### new
+
+new는 해당 타입을 만든 다음에 주소를 준다. 따라서 주소로 받아야 한다.
+
+```cpp
+	//int var;
+	//var = 7;
+
+	int *ptr = new int;
+	*ptr = 7; // dereference
+```
+
+```cpp
+	int* ptr2 = new int{ 7 }; // new int(7)로도 가능
+```
+
+
+
+### delete
+
+OS에 메모리를 돌려주는 것
+
+```cpp
+	delete ptr;
+```
+
+앞에서는 안 써줬다. 이건 프로그램이 끝나면서 OS가 알아서 거둬갔기 때문.
+
+
+
+### 삭제 이후
+
+```cpp
+	// delete
+	delete ptr;
+
+	cout << "After delete" << endl;
+	cout << ptr << endl;
+	cout << *ptr << endl;
+```
+
+```txt
+00008123
+
+```
+
+주소는 그대로 남아있다. 그 주소를 de refer하면 엉뚱한 값이 나오게 됨.
+
+
+
+```cpp
+	delete ptr;
+	ptr = nullptr; // 쓸모가 없음을 명시
+
+	cout << "After delete" << endl;
+	if (ptr != nullptr)
+	{
+		cout << ptr << endl;
+		cout << *ptr << endl;
+	}
+```
+
+이렇게 nullptr을 넣어줘서 있는 경우에만 출력하게 한다.
+
+
+
+### 그렇다면 메모리를 다른 데서 다 쓰고 있어서 못 쓰는 경우
+
+new가 에러를 일으켜도 버티게 해야 한다.
+
+```cpp
+	int* ptr3 = new (std::nothrow) int{ 7 };
+
+	if (ptr3)
+	{
+		cout << ptr3 << endl;
+		cout << *ptr3 << endl;
+	}
+	else {
+		cout << "Could not allocate memory" << endl;
+	}
+```
+
+이렇게 처리하면 에러가 나지 않게 된다.
+
+
+
+```cpp
+	int* ptr2 = ptr;
+
+	delete ptr;
+	ptr = nullptr;
+	// 여기서 ptr2도 nullptr이 되어야 하는데 그렇지 않는다.
+	// ptr2 = nullptr; 이라고 해주는 방법이 1.
+```
+
+
+
+### memory leak
+
+```cpp
+	// memory leak
+	while (true)
+	{
+		int* ptr = new int;
+		cout << ptr << endl;
+	}
+	// 여기서는 block밖이므로 ptr이 사라짐. 그러나 할당되어 있음.
+```
+
+
+
+### 확인하는 방법 1.
+
+프로그램이 크다면 task manager에서 performance -> memory 사용량이 증가하는 추세면 새고 있는 것.
+
+
+
+### 방법 2.
+
+debug - window - show diagnostic tools에서 메모리 사용량을 출력
+
+
+
+new, delete은 OS에 가서 메모리를 가져오고 반납하는 과정이 필요하므로 속도가 느리다. 따라서 프로그래밍을 잘하려면 new, delete을 적게 쓰는 것이 중요하다. new, delete을 직접 관리할 수만 있으면 가장 좋다. 어렵기 때문에 이걸 보완하는 방식이 최근에 등장하고 있다.
+
+
+
+
+
+## 6.12 동적 할당 배열
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+	int length;
+
+	cin >> length;
+
+	//int array[length];
+	int* array = new int[length];
+
+	array[0] = 1;
+	array[1] = 2;
+
+	for (int i = 0; i < length; ++i)
+	{
+		cout << (uintptr_t) & array[i] << endl;
+		cout << array[i] << endl;
+	}
+
+	delete[] array; // 긴 사이즈의 메모리를 삭제
+
+	return 0;
+
+}
+```
+
+전부 0으로 초기화하고 싶다면
+
+```cpp
+	int* array = new int[length]();
+```
+
+
+
+```cpp
+	int* array = new int[length] {11, 22, 33, 44, 55, 66};
+
+	array[0] = 1;
+	array[1] = 2;
+
+	for (int i = 0; i < length; ++i)
+	{
+		cout << (uintptr_t) & array[i] << endl;
+		cout << array[i] << endl;
+	}
+
+	delete[] array; // 긴 사이즈의 메모리를 삭제
+
+	return 0;
+```
+
+6개 지정해놓고 length에 5를 입력하면 런타임 에러 발생. 다른 프로그램이 쓰고 있어서 메모리 충돌이 발생한다.
+
+
+
+### 사이즈 지정 생성
+
+```cpp
+	int fixedArray[] = { 1, 2, 3, 4, 5 };
+
+	int* array2 = new int[5]{ 1, 2, 3, 4, 5 }; // 강의에서는 안 된다고 함
+
+	for (int i = 0; i < 5; i++)
+	{
+		cout << array2[i] << endl;
+	}
+
+	delete[] array2;
+```
+
+
+
+### resizing
+
+1) 새로 만들어서 복사해오는 방법.
+
+2) OS에 더 달라고 요청하는 방법
+
+but std::vector에서 알아서 잘 해줌.
+
+
+
+포인터 연산도 동일하게 값들에 접근할 수 있다.
+
 
 
 
