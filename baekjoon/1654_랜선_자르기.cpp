@@ -1,16 +1,22 @@
+// int를 long long으로 취급해야하는 문제. K가 2^31 - 1까지 가능함.
 #include <iostream>
 
 using namespace std;
 
 int K, N;
-int nums[10000] = {0};
-int max_num = 0;
+long long nums[10000] = {0};
+long long max_num = 0;
 
-int search(int start, int end, int* answer)
+void search(long long start, long long end, long long* answer)
 {
+    // cout << "start: " << start << " " << end << endl;
     if (start > end)
-        return *answer;
-    int mid = (start + end) / 2;
+    {
+        // cout << "answer: " << *answer << endl;
+        return;
+    }
+        
+    long long mid = (start + end) / 2;
     int count = N;
     
     for (int i = 0; i < K; i++)
@@ -31,25 +37,23 @@ int main(void)
     ios::sync_with_stdio(0);
     cin.tie(0);
 
-
-
     cin >> K >> N;
     for (int i = 0; i < K; i++)
     {
-        int num;
+        long long num;
         cin >> num;
         nums[i] = num;
         if (num > max_num)
             max_num = num;
     }
 
-    int start = 1;
-    int end = max_num;
-    int answer = -1;
+    long long start = 1;
+    long long end = max_num;
+    long long result = -1;
 
-    answer = search(start, end, &answer);
+    search(start, end, &result);
 
-    cout << answer << endl;
+    cout << result << endl;
 
 
 }
