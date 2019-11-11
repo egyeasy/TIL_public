@@ -1296,6 +1296,479 @@ but std::vector에서 알아서 잘 해줌.
 
 
 
+## 6.14 참조 변수 reference variable
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+	int value = 5;
+
+	// pointer
+	int* ptr = nullptr;
+	ptr = &value;
+
+	// reference
+	int& ref = value;
+
+	cout << ref << endl;
+
+	ref = 10;
+
+	cout << value << " " << ref << endl;
+
+
+	
+	return 0;
+}
+```
+
+메모리 주소를 공유하는 변수를 만들 수 있음. 별명처럼 사용할 수 있다.
+
+
+
+주소를 찍어보면 재밌다.
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+	int value = 5;
+
+	// pointer
+	int* ptr = nullptr;
+	ptr = &value;
+
+	// reference
+	int& ref = value;
+
+	cout << ref << endl;
+
+	ref = 10; // *ptr = 10;
+
+	cout << value << " " << ref << endl;
+
+
+	cout << &value << endl;
+	cout << &ref << endl;
+	cout << ptr << endl;
+	cout << &ptr << endl;
+
+	
+	return 0;
+}
+```
+
+value와 ref는 같은 주소를 공유한다.
+
+
+
+### 특징
+
+- ref는 반드시 초기화(값 할당) 되어야 함
+
+- literal(`104`와 같은 상수)은 들어갈 수 없음
+
+- const 문제
+
+  ```cpp
+  	int x = 5;
+  	int& ref2 = x;
+  	
+  	const int y = 8;
+  	//int& ref2 = y; // 불가함 - ref2가 막 바꿔버릴 수도 있기 때문
+  	const int& ref2 = y;
+  ```
+
+- 재할당 가능
+
+  ```CPP
+  
+  	int value1 = 5;
+  	int value2 = 10;
+  
+  	int& ref3 = value1;
+  
+  	cout << ref3 << endl;
+  
+  	ref3 = value2;
+  
+  	cout << ref3 << endl;
+  
+  ```
+
+  
+
+### 함수 인자
+
+```cpp
+void doSomething(int n)
+{
+	n = 10;
+	cout << "in doSth " << n << endl;
+}
+
+
+	int n = 5;
+	cout << n << endl; //5
+
+	doSomething(n);
+
+	cout << n << endl; //5
+```
+
+n이 복사가 돼서 main 변수에 영향을 주지 않는다.
+
+영향을 주려면 어떻게 해야할까?
+
+```cpp
+void doSomething2(int &n)
+{
+	n = 10;
+	cout << "in doSth " << n << endl;
+}
+
+	cout << n << endl;
+
+	doSomething2(n);
+
+	cout << n << endl;
+
+```
+
+레퍼런스를 쓰면 변수 자체를 넘기는 것. 편리함.
+
+값, 주소조차도 복사를 할 필요가 없다 -> 효율이 좋다.
+
+
+
+그런데 레퍼런스를 함수 단에서 고칠 수 없게 하려면 어떡할까? const로 막을 수 있다.
+
+```cpp
+void doSomething2(const int &n)
+{
+	// n = 10;
+	cout << "in doSth " << n << endl;
+}
+```
+
+```cpp
+void printElements(int(&arr)[5]) // 개수 표시해야 함
+{
+	for (int i = 0; i < 5; i++)
+	{
+		// do sth
+	}
+}
+```
+
+
+
+### struct
+
+```cpp
+struct Something
+{
+	int v1;
+	float v2;
+};
+
+struct Other
+{
+	Something st;
+};
+
+	Other ot;
+	ot.st.v1 = 1.0; // 계속해서 안으로 들어가기가 귀찮다
+
+	int& v1 = ot.st.v1;
+	v1 = 1;
+```
+
+
+
+
+
+### 레퍼런스와 포인터의 비교
+
+기능상 동일하다
+
+```cpp
+	int value4 = 5;
+	int* const ptr4 = &value4; // 주소를 못 바꾸는 것
+	int& ref4 = value4;
+```
+
+
+
+
+
+## 참조와 const
+
+참조는 함수의 파라미터로 사용할 때 아주 편리하다.
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+	int x = 5;
+	int& ref_x = x;
+	const int& ref_x = x;
+
+	const int x2 = 5;
+	const int& ref2_x = x2;
+	
+
+	return 0;
+}
+```
+
+x를 const로 선언하고 ref에서 const를 선언하지 않으면 안 된다
+
+
+
+```cpp
+
+	const int& ref_x2 = 3 + 4;
+
+	cout << ref_x2 << endl;
+	cout << &ref_x2 << endl;
+```
+
+그냥 int와의 차이가 뭘까? 함수 파라미터로 넣을 때 아주 유용
+
+
+
+```cpp
+void doSomething(const int x)
+{
+	cout << x << endl;
+}
+
+void doSomething2(const int& x) // 변수 복사 없이 가능
+{
+	cout << x << endl;
+}
+
+	int a = 1;
+
+	cout << endl;
+
+	doSomething(a);
+	doSomething(a + 2);
+	doSomething(3);
+
+	doSomething2(a);
+	doSomething2(3);
+	doSomething2(a + 3);
+```
+
+
+
+
+
+## 6.16 포인터와 참조의 멤버 선택
+
+포인터나 참조를 통해 구조체나 클래스의 멤버를 접근할 수 있다.
+
+
+
+```cpp
+#include <iostream>
+
+struct Person
+{
+	int age;
+	double weight;
+
+};
+
+int main()
+{
+	Person person;
+
+	person.age = 5;
+	person.weight = 30;
+
+	Person& ref = person;
+	ref.age = 15;
+	
+	// 포인터는 좀 다르다
+	Person* ptr = &person;
+	ptr->age = 30;
+
+	return 0;
+}
+```
+
+
+
+```cpp
+#include <iostream>
+
+struct Person
+{
+	int age;
+	double weight;
+
+};
+
+int main()
+{
+	Person person;
+
+	person.age = 5;
+	person.weight = 30;
+
+	Person& ref = person;
+	ref.age = 15;
+	
+	// 포인터는 좀 다르다
+	Person* ptr = &person;
+	ptr->age = 30;
+	(*ptr).age = 20; // dereference를 쓰면 점으로 접근 가능
+	
+	Person& ref2 = *ptr;
+	ref2.age = 45;
+
+	std::cout << &person << std::endl;
+	std::cout << &ref2 << std::endl;
+
+	return 0;
+}
+```
+
+
+
+
+
+## 6.17 C++11 For-each 반복문
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+	int fibonacci[] = { 0, 1, 1, 2, 3, 5, 8, 13,
+							21, 34, 55, 89 };
+
+	for (int number : fibonacci)
+		cout << number << " ";
+	cout << endl;
+}
+```
+
+
+
+### 값을 바꿔보자
+
+```cpp
+
+	// change
+	for (int number : fibonacci)
+		number = 10;
+
+
+	for (int number : fibonacci)
+		cout << number << " ";
+	cout << endl;
+```
+
+값이 그대로다. 함수 파라미터 성격으로 전달 되기 때문 -> 이걸 ref를 활용하여 변경 가능하게 만들어줄 수 있다.
+
+
+
+```cpp
+	// change
+	for (int& number : fibonacci)
+		number = 10;
+
+
+	for (int number : fibonacci)
+		cout << number << " ";
+	cout << endl;
+```
+
+
+
+### auto
+
+```cpp
+	// change
+	for (auto& number : fibonacci)
+		number = 10;
+
+
+	for (auto number : fibonacci)
+		cout << number << " ";
+	cout << endl;
+```
+
+
+
+### const
+
+일반적으로 이렇게 쓴다.
+
+```cpp
+	// change
+	for (auto& number : fibonacci)
+		number = 10;
+
+
+	for (const auto number : fibonacci)
+		cout << number << " ";
+	cout << endl;
+
+```
+
+
+
+### 가장 큰 숫자 찾기
+
+```cpp
+	int max_number = std::numeric_limits<int>::lowest();
+
+	for (const auto& n : fibonacci)
+		max_number = std::max(max_number, n);
+
+	cout << max_number << endl;
+	
+```
+
+
+
+array를 동적 할당하면 for each를 쓸 수 없다.
+
+대신 vector를 쓰면 더 좋다.
+
+
+
+### vector
+
+```cpp
+#include <vector>
+
+
+	vector<int> fibonacci = { 0, 1, 1, 2, 3, 5, 8, 13,
+							21, 34, 55, 89 };
+```
+
+위에서와 같이 동일하게 쓸 수 있다.
+
+
+
 
 
 
