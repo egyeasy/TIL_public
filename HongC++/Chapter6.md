@@ -1771,6 +1771,400 @@ array를 동적 할당하면 for each를 쓸 수 없다.
 
 
 
+## 6.18 보이드 포인터 void pointers
+
+포인터는 주소다.자료형과 상관없이 포인터를 저장할 수 있지 않을까?
+
+void pointer는 generic(포괄적) pointer라고도 불린다.
+
+
+
+```cpp
+#include <iostream>
+
+int main()
+{
+	int		i = 5;
+	float	f = 3.0;
+	char	c = 'a';
+
+	void* ptr = nullptr;
+
+	ptr = &i;
+	ptr = &f;
+	ptr = &c;
+
+
+
+
+	return 0;
+}
+```
+
+이렇게 써도 문제가 없다.
+
+
+
+but 실제로 어떤 타입이 들어갔는지 알 방법이 없다.
+
+또한 포인터 연산이 불가함
+
+```cpp
+cout << ptr + 1 << endl; // 몇바이트 더해야 하는지 알 수 없음
+```
+
+
+
+de-reference도 불가
+
+```cpp
+	cout << *ptr << endl;
+```
+
+
+
+casting 해줘야한다.
+
+```cpp
+	cout << *static_cast<float*>(ptr) << endl;
+```
+
+
+
+다형성 구현을 하다보면 부득이하게 이렇게 써야 하는 경우가 있다.
+
+```cpp
+enum Type
+{
+	INT,
+	FLOAT,
+	CHAR
+};
+
+	Type type = FLOAT;
+
+	if (type == FLOAT)
+		cout << *static_cast<float*>(ptr) << endl;
+	else if(type == INT)
+		cout << *static_cast<int*>(ptr) << endl;
+
+```
+
+
+
+but 최근에는 새로운 문법으로 더 편하게 쓸 수 있다.
+
+
+
+
+
+## 6.19 다중 포인터와 동적 다차원 배열
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+	int* ptr = nullptr;
+	int** ptrptr = nullptr;
+
+	int value = 5;
+
+	ptr = &value;
+	ptrptr = &ptr;
+
+	cout << ptr << " " << *ptr << " " << &ptr << endl;
+	cout << ptrptr << " " << *ptrptr << " " << &ptrptr << endl;
+	cout << **ptrptr << endl;
+
+	return 0;
+}
+```
+
+삼중, 사중 포인터도 가능. 실제로 잘 사용하지는 않는다.
+
+
+
+### 이중 포인터 이차원 행렬 구현
+
+```cpp
+	int* r1 = new int[col] {1, 2, 3, 4, 5};
+	int* r2 = new int[col] {6, 7, 8, 9, 10};
+	int* r3 = new int[col] {11, 12, 13, 14, 15};
+
+	// integer pointer의 array를 만들자
+	int** rows = new int* [row] {r1, r2, r3};
+
+	for (int r = 0; r < row; ++r)
+	{
+		for (int c = 0; c < col; ++c)
+			cout << rows[r][c] << " ";
+		cout << endl;
+	}
+
+	delete[] r1;
+	delete[] r2;
+	delete[] r3;
+	delete[] rows;
+```
+
+
+
+for 문으로 delete를 하게 해보자.
+
+
+
+```cpp
+	const int row = 3;
+	const int col = 5;
+
+	const int s2da[row][col] =
+	{
+	{1, 2, 3, 4, 5},
+	{6, 7, 8, 9, 10},
+	{11, 12, 13, 14, 15}
+	};
+
+	// integer pointer의 array를 만들자
+	int** matrix = new int* [row];
+
+	for (int r = 0; r < row; ++r)
+		matrix[r] = new int[col];
+
+
+	for (int r = 0; r < row; ++r)
+	{
+		for (int c = 0; c < col; ++c)
+		{
+			matrix[r][c] = s2da[r][c];
+			cout << matrix[r][c] << " ";
+		}
+		cout << endl;
+	}
+
+	// delete
+	for (int r = 0; r < row; ++r)
+		delete matrix[r];
+
+	delete[] matrix;
+```
+
+
+
+### 이중 포인터 쓰지 않기
+
+```cpp
+	// 2차원으로 만들지 않는 법
+	int* matrix2 = new int[row*col];
+
+	for (int r = 0; r < row; ++r)
+	{
+		for (int c = 0; c < col; ++c)
+		{
+			matrix2[c + col * r] = s2da[r][c];
+			cout << matrix2[c + col * r] << " ";
+		}
+		cout << endl;
+	}
+
+	// delete
+	delete[] matrix2;
+
+```
+
+
+
+
+
+## 6.20 std::array 소개
+
+```cpp
+#include <iostream>
+#include <array>
+
+using namespace std;
+
+int main()
+{
+	// int array[5] = { 1, 2, 3, 4, 5 }
+
+	array<int, 5> my_arr = { 1, 2, 3, 4, 5 };
+	my_arr = { 0, 1, 2, 3, 4 };
+	my_arr = { 0, 1, 2 }; // 나머지는 0으로 채워짐
+
+	cout << my_arr[0] << endl;
+	cout << my_arr.at(0) << endl; // 똑같이 작동
+
+
+}
+```
+
+at을 사용하면 미리 번지를 체크해보고 에러가 나면 예외처리를 발동. 대신 좀 더 느리다. 퍼포먼스가 아주 중요한 프로그램을 만들 때는 전자를 사용.
+
+
+
+```cpp
+#include <iostream>
+#include <array>
+
+using namespace std;
+
+void printLength(array<int, 5> my_array)
+{
+	cout << my_array.size() << endl;
+}
+
+int main()
+{
+	// int array[5] = { 1, 2, 3, 4, 5 }
+
+	array<int, 5> my_arr = { 1, 2, 3, 4, 5 };
+	my_arr = { 0, 1, 2, 3, 4 };
+	my_arr = { 0, 1, 2 }; // 나머지는 0으로 채워짐
+
+	cout << my_arr[0] << endl;
+	cout << my_arr.at(0) << endl; // 똑같이 작동
+
+	cout << my_arr.size() << endl;
+
+}
+```
+
+함수에 넣을 경우 array에 복사가 된다. 클 경우에 시간이 오래 걸림
+
+원래 배열을 변경하고 싶을 경우 레퍼런스를 쓰면 편하다.(변경하고 싶지 않다면 const)
+
+```cpp
+void printLength(const array<int, 5>& my_array)
+{
+	cout << my_array.size() << endl;
+}
+
+```
+
+
+
+### for each
+
+```cpp
+	for (auto &element : my_arr)
+		cout << element << " ";
+	cout << endl;
+```
+
+
+
+### sort
+
+sorting을 할 구간을 선택해야 한다.
+
+```cpp
+	std::sort(my_arr.begin(), my_arr.end());
+
+	for (auto& element : my_arr)
+		cout << element << " ";
+	cout << endl;
+```
+
+내림차순으로 정렬하려면?
+
+```cpp
+	std::sort(my_arr.rbegin(), my_arr.rend());
+```
+
+
+
+
+
+## 6.21 std::vector 소개
+
+정적 배열에 array가 있다면 동적 배열에 vector
+
+```cpp
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+int main()
+{
+	// std::array<int, 5> array; // 사이즈를 반드시 적어줘야
+	std::vector<int> array; // 필수가 아님
+
+	std::vector<int> array2 = { 1, 2, 3, 4, 5 };
+
+	cout << array2.size() << endl; // 5
+
+	std::vector<int> array3 = { 1, 2, 3 };
+
+	cout << array3.size() << endl; // 3
+
+	std::vector<int> array4 = { 1, 2, 3, };
+
+	cout << array4.size() << endl; // 3
+
+}
+```
+
+
+
+
+
+### foreach
+
+```cpp
+	vector<int> arr = { 1,2, 3, 4,5 };
+
+	for (auto& itr : arr)
+		cout << itr << " ";
+	cout << endl;
+```
+
+
+
+### at
+
+```cpp
+	cout << arr[1] << endl;
+	cout << arr.at(1) << endl;
+```
+
+
+
+### delete?
+
+delete을 해줄 필요가 없다. block을 벗어나면 알아서 없어짐. delete의 부담을 줄여준다.
+
+배열의 길이를 스스로 알고 있다. 그냥 배열은 길이를 알 수가 없다.
+
+```cpp
+	cout << arr.size() << endl;
+```
+
+
+
+### resize 가능
+
+```cpp
+	arr.resize(10);
+
+	arr.push_back(333);
+```
+
+줄이는 것도 가능하다. 뒤의 것들이 날아감.
+
+
+
+
+
+
+
+
+
+
+
 
 
 
