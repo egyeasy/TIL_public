@@ -372,23 +372,183 @@ void foo(const int * ptr, int* arr, int length)
 
 
 
+## 7.5 다양한 반환 값들(값, 참조, 주소, 구조체, 튜플)
+
+### return by value
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int getValue(int x)
+{
+	int value = x * 2;
+	return value;
+}
+
+int main()
+{
+	int value = getValue(3);
+
+	return 0;
+}
+```
+
+값이 복사해서 들어가게 된다. 하지만 변수의 생성, 복사 때문에 속도가 떨어질 것. 간단한 경우에는 문제가 되지 않으나 데이터가 엄청나게 많다면 문제가 된다. 
 
 
 
+### 주소로 돌려받기(return by address)
+
+1. dereference해서 받기(`int value = *getValue(3);`)
+
+   권장하지 않는다. 함수 영역을 벗어남과 동시에 사라지게 되는데 이걸 반환하는 것이 좋지는 않다.
+
+2. 주소를 받기
+
+   ```cpp
+   #include <iostream>
+   
+   using namespace std;
+   
+   int* getValue(int x)
+   {
+   	int value = x * 2;
+   	return &value;
+   }
+   
+   int main()
+   {
+   	int *value = getValue(3); // 
+   
+   	return 0;
+   }
+   ```
+
+   이건 더 위험하다. 함수를 벗어나면서 변수는 사라졌는데 주소만 쥐고 있으면서 전달하면 그 안에 뭐가 있는지 모른다. main dereference 하면 제대로 나오긴 할 수 있으나 권장하지 않는다.
 
 
 
+특이한 방식으로 return by address 하기도 한다.
+
+```cpp
+int* allocateMemory(int size)
+{
+	return new int[size];
+}
+
+	//int* array = new int[10];
+	int* array = allocateMemory(1024);
+	delete[] array;
+
+```
+
+이것의 위험은 new와 대응되는 delete이 있어야 한다는 것. main에 delete을 두면 new랑 층위가 달라서 어려워질 수 있다.
 
 
 
+### return by reference
+
+```cpp
+int& getVal(int x)
+{
+	int value = x * 2;
+	return value;
+}
+
+	int &val = getVal(5);
+
+	cout << val << endl;
+	cout << val << endl;
+```
+
+작동하긴 하지만 위험하다. 이미 사라지는 애의 reference를 받는 것.
+
+두 번째 출력할 때 이상한 값이 나온다. 임시로 잡아두다가 값이 사라진 것 -> 쓰레기 값이 출력된다.
 
 
 
+쓸모가 없냐하면 그런 건 아니다. 편하게 쓸 수 있는 경우가 있다.
+
+```cpp
+int& get(std::array<int, 100>& my_array, int ix) // 여기서 &로 받는다.
+{
+	return my_array[ix];
+}
+
+	std::array<int, 100> my_array;
+	my_array[30] = 10;
+	
+	// 데이터 일부를 고치고 싶다.
+	get(my_array, 30) = 1024;
+
+	cout << my_array[30] << endl;
+```
+
+array 주소는 확실하게 main에 잡아둔 상태에서 한 인자를 얻고 싶을 때 사용.
 
 
 
+### 여러 개의 값 리턴
+
+1. struct로 받는 게 일반적인 방법
+
+```cpp
+struct S
+{
+	int a, b, c, d;
+};
+
+S getStruct()
+{
+	S my_s{ 1, 2, 3, 4 };
+	return my_s;
+}
 
 
+	S my_s = getStruct();
+	cout << my_s.a << endl;
+```
+
+​	c 스타일이라면 이걸 사용하지만 불편하다. 속도는 더 빠르다.
+
+
+
+2. tuple 사용
+
+   ```cpp
+   #include <tuple>
+   
+   using namespace std;
+   
+   std::tuple<int, double> getTuple()
+   {
+   	double a = 10;
+   	double d = 3.14;
+   	return std::make_tuple(a, d);
+   }
+   
+   	// tuple
+   	std::tuple<int, double> my_tp = getTuple();
+   	cout << std::get<0>(my_tp) << endl; // a
+   	cout << std::get<1>(my_tp) << endl; // d
+   
+   ```
+
+   이것도 여전히 불편하긴 하다. 받는 쪽에서 tuple을 선언해야 함
+
+
+
+3. C++ 17
+
+   ```cpp
+   	auto [a, d] = getTuple();
+   	cout << a << endl;
+   	cout << d << endl;
+   ```
+
+   a, d 변수를 선언함과 동시에 받아주는 것.
 
 
 
