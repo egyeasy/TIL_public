@@ -554,6 +554,281 @@ S getStruct()
 
 
 
+## 7.6 인라인 함수
+
+프로그램을 빠르게 만들려고 할 때 최적화를 하기 위
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int min(int x, int y)
+{
+	return x > y ? y : x;
+}
+
+int main()
+{
+
+	cout << min(5, 6) << endl;
+	cout << min(3, 2) << endl;
+}
+```
+
+복사하는 등의 과정에서 시간이 많이 걸린다.
+
+
+
+이럴 때 인라인 함수들을 이렇게 쓴다.
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+inline int min(int x, int y)
+{
+	return x > y ? y : x;
+}
+
+int main()
+{
+
+	cout << min(5, 6) << endl;
+	cout << min(3, 2) << endl;
+
+	cout << (5 > 6 ? 6 : 5) << endl;
+	cout << (3 > 2 ? 2 : 3) << endl;
+}
+```
+
+이렇게 쓴 효과와 같아진다. 이건 컴파일러에게 처리를 맡기는 것. inline 선언은 강제 의무가 아니라, 권장/권유이다. 가능하다면 적용해보는 것. 모든 함수를 inline으로 바꾼다고 빨라지는 것이 아니다. 또한 요즘 컴파일러는 인라인을 넣지 않아도 스스로 판단하여 성능이 빨라질 것 같으면 인라인을 적용한다. 따라서 요즘은 쓰든 안쓰든 속도의 보장이 없다는 게 대세다.
+
+인라인과 같은 코딩 문법보다는 소프트웨어 구조, data driven(GPU 가속, 병렬처리 등)으로 성능을 개선하는 것을 권장.
+
+인라인 함수를 많이 쓰게 되면 코드가 많이 커진다 -> 메모리에서 프로그램이 차지하는 용량이 많다 -> 더 효율적이라고 할 수가 없다.
+
+
+
+## 함수 오버로딩 Function Overloading
+
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+int add(int x, int y)
+{
+	return x + y;
+}
+
+double add(double x, double y)
+{
+	return x + y;
+}
+
+int main()
+{
+
+}
+```
+
+
+
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+int add(int x, int y)
+{
+	return x + y;
+}
+
+double add(double x, double y)
+{
+	return x + y;
+}
+
+int main()
+{
+	add(1, 2);
+	add(3.0, 4.0); // 컴파일러가 알아서 해당하는 함수를 적용해서 컴파일한다.
+}
+```
+
+컴파일러는 매개변수가 다르면 서로 다른 함수로 인식한다. 매개변수에 맞춰서 함수를 찾아 컴파일하는 것.
+
+어느 add를 사용할 지는 컴파일 할 때 결정이 되어야 한다.
+
+만약 이름과 매개변수 타입까지 같으면 에러가 발생한다. return type만 다르다고 다른 함수로 인식되지 않는다.
+
+
+
+```cpp
+//int getRandomValue() {}
+void getRandom(int& x) {}
+
+//double getRandomValue() {}
+void getRandom(double& x) {}
+
+	int x;
+	getRandom(x);
+```
+
+아래 방법은 main에서 변수를 일일이 선언해줘야 함
+
+
+
+```cpp
+typedef int my_int;
+
+void print(int x) {}
+
+void print(my_int x) {}
+```
+
+my_int = int이기 때문에 컴파일 실패
+
+
+
+```cpp
+void print(char* value) {}
+void print(int value) {}
+
+	print(0);
+	print('a'); // int로 인식. "a"라면 문자열이라 매치되는 게 없다고 나옴
+```
+
+잘 맞는 게 없어서 억지로 있는 것들 중에 갖다 맞춘다.
+
+
+
+```cpp
+
+void print(unsigned int value) {}
+void print(float value) {}
+
+	print('a');
+	print(0);
+	print(3.14159); // 모호하다. 
+```
+
+
+
+```cpp
+	print((unsigned int)'a');
+	print(0u); // unsigned int
+	print(3.14159f);
+```
+
+이렇게 모호성을 해소할 수 있다.
+
+
+
+
+
+## 매개변수의 기본값 Default Parameters
+
+```cpp
+#include <iostream>
+using namespace std;
+
+void print(int x = 0)
+{
+	cout << x << endl;
+}
+
+int main()
+{
+	print(10);
+	print();
+
+	return 0;
+}
+```
+
+
+
+```cpp
+void print(int x, int y = 20, int z = 30)
+{
+	cout << x << endl;
+}
+
+int main()
+{
+	//print(10);
+	print();
+	print(100);
+	print(100, 200);
+
+	return 0;
+}
+```
+
+파라미터의 오른쪽부터 default 값을 채워줘야 한다.
+
+
+
+### 주의할 점 - 기본값 재정의
+
+```cpp
+void print(int x = 10, int y = 20, int z = 30); // in header
+
+//void print(int x = 0)
+//{
+//	cout << x << endl;
+//}
+
+//void print(int x = 10, int y = 20, int z = 30)
+void print(int x, int y, int z)
+{
+	cout << x << endl;
+}
+```
+
+header에서 함수를 선언할 경우 한 군데에서만 default를 넣어줘야 한다.
+
+보통은 헤더 파일에 디폴트를 넣는다.
+
+
+
+```cpp
+void print(std::string str) {}
+void print(char ch = ' ') {}
+
+	print(); // char 타입의 파라미터가 들어가는 함수로 인식될 것
+```
+
+
+
+좀 더 난감한 경우를 알아보자.
+
+```cpp
+void print(int x) {}
+void print(int x, int y = 20) {}
+
+	print(10); // ambiguous error
+```
+
+디폴트 값 때문에 앞의 매개변수 1개 함수를 오버로딩 할 수 없다.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
