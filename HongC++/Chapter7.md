@@ -819,9 +819,531 @@ void print(int x, int y = 20) {}
 
 
 
+## 7.9 함수 포인터
+
+함수도 주소를 갖고 있다. 그래서 주소를 가지고 다른 것을 할 수 있다.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int func()
+{
+	return 5;
+}
+
+int main()
+{
+
+	cout << func << endl;
+	
+	int(*fcnptr)() = func;
+
+
+	return 0;
+}
+```
 
 
 
+```cpp
+#include <iostream>
+using namespace std;
+
+int func()
+{
+	return 5;
+}
+
+int goo()
+{
+	return 10;
+}
+
+int main()
+{
+
+	cout << func << endl;
+	
+	int(*fcnptr)() = func; // func를 실행()시키지 않고 주소만 받는다.
+
+	cout << fcnptr() << endl; // 괄호를 치면 실행이 됨
+
+	fcnptr = goo;
+	
+	cout << fcnptr() << endl; // 10
+
+
+	return 0;
+}
+```
+
+  
+
+매개변수 표시
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int func(int x)
+{
+	return 5;
+}
+
+int goo()
+{
+	return 10;
+}
+
+int main()
+{
+
+	cout << func << endl;
+	
+	int(*fcnptr)(int) = func; // func를 실행()시키지 않고 주소만 받는다.
+
+	cout << fcnptr() << endl; // 괄호를 치면 실행이 됨
+
+	fcnptr = goo;
+	
+	cout << fcnptr() << endl; // 10
+
+
+
+
+	return 0;
+}
+```
+
+goo와는 매개변수 형식이 안맞아서 에러가 남.
+
+
+
+```cpp
+
+void printNumbers(const array<int, 10>& my_array, bool print_even)
+{
+	for (auto element : my_array)
+	{
+		if (print_even && element % 2 == 0) cout << element;
+		if (!print_even && element % 2 == 1) cout << element;
+	}
+	cout << endl;
+
+}
+
+
+
+	std::array<int, 10> my_array = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+
+	for (auto element : my_array)
+	{
+		if (element % 2 == 0) cout << element;
+	}
+	cout << endl;
+
+	printNumbers(my_array, true);
+	printNumbers(my_array, false);
+
+```
+
+
+
+여기서 함수 포인터를 사용해보자.
+
+```cpp
+bool isEven(const int& number)
+{
+	if (number % 2 == 0) return true;
+	else return false;
+}
+
+bool isOdd(const int& number)
+{
+	if (number % 2 != 0) return true;
+	else return false;
+}
+
+void printNumbers(const array<int, 10>& my_array, bool (*check_fcn)(const int&))
+{
+	for (auto element : my_array)
+	{
+		if (check_fcn(element) == true) cout << element;
+	}
+	cout << endl;
+
+}
+
+
+	std::array<int, 10> my_array = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+
+	printNumbers(my_array, isEven);
+	printNumbers(my_array, isOdd);
+```
+
+
+
+기본값 부여도 가능
+
+```cpp
+void printNumbers(const array<int, 10>& my_array, bool (*check_fcn)(const int&) = isEven)
+```
+
+
+
+함수 포인터가 빈번하게 사용된다면 type define으로 줄일 수 있다.
+
+
+
+### typedef
+
+```cpp
+typedef bool(*check_fcn_t)(const int&);
+
+//void printNumbers(const array<int, 10>& my_array, bool (*check_fcn)(const int&) = isEven)
+void printNumbers(const array<int, 10>& my_array, check_fcn_t check_fcn = isEven)
+```
+
+
+
+또는 앞에서 이렇게 선언
+
+### using
+
+```cpp
+using check_fcn_t = bool(*)(const int&);
+```
+
+
+
+더 편한 것은(C++ 17)
+
+### functional
+
+```cpp
+void printNumbers(const array<int, 10>& my_array, std::function<bool(const int&)> check_fcn = isEven)
+    
+    std::function<bool(const int&)> fcnptr1 = isEven;
+
+	printNumbers(my_array, isEven);
+	printNumbers(my_array, isOdd);
+
+	fcnptr1 = isOdd;
+
+	printNumbers(my_array, fcnptr1);
+```
+
+
+
+
+
+## 7.10 스택과 힙
+
+메모리의 각 부분을 세그먼트라고 함
+
+
+
+### 각 세그먼트
+
+힙
+
+스택
+
+data : 초기화된 전역 및 static variables
+
+BSS(uninitialized data segment) : 0으로 초기화된 static variables
+
+code segment : 작성한 코드
+
+
+
+### 스택 stack
+
+함수가 다른 호출하며 깊이 들어가면서 stack에 함수 및 지역변수들을 쌓는다. 함수가 끝나면 그것을 위에서 제거한다.
+
+스택의 단점 : 빠르지만 크기가 작다. `array[1000000]`를 할당하지 못한다(**stack** **overflow**)
+
+
+
+### 힙 heap
+
+스택을 보완하기 위해 힙 메모리를 추가로 사용.
+
+```cpp
+int main()
+{
+    int *ptr = nullptr;
+    ptr = new int[1000000];
+    
+    delete[] ptr;
+    
+    ptr = nullptr;
+    
+    return 0;
+}
+```
+
+
+
+`ptr = new int[1000000];` 동적메모리를 할당하면 이 만큼의 공간을 할당함. but 어디에 생기는지는 알기 힘들다(스택은 순차적으로 쌓이지만, 힙에는 순서가 없다) 큰 데이터가 일련으로 들어갈 수 있는 공간을 마련해야 할 경우 OS가 가장 적당한 곳을 지정해서 들어가기 때문.
+
+`delete[] ptr` : heap에 할당된 메모리를 회수해감. 단, 스택 상에는 ptr이 남아있다. 이 변수를 따라가면 이상한 값이 있을 것. 이를 방지하기 위해 `ptr = nullptr;`
+
+
+
+```cpp
+void initArray()
+{
+    int *ptr2 = new int[1000];
+    // delete[] ptr2; // delete 하지 않는다면?
+}
+
+int main()
+{
+    initArray();
+    
+    return 0;
+}
+```
+
+initArray() 함수가 끝나고 나가는데 ptr2를 heap 상에서 지우지 않았다. 이럴 경우 ptr2의 내용을 가리키는 변수가 없어진다 -> 메모리 누수 -> 다른 프로그램이 사용할 메모리를 잠식하게 됨.
+
+
+
+
+
+## 7.11 std::vector를 스택처럼 사용하기
+
+vector에는 size, capacity가 있다.
+
+new와 delete은 많이 느리다.
+
+벡터는 new와 delete을 사용하여 공간을 늘리기도, 줄이기도 하는 건데,
+
+어떻게 하면 new와 delete이 적게 호출될 지를 따지면서 짜야 효율성을 향상시킬 수 있다.
+
+- capacity : 프로그램 내부에서는 capacity 개수 만큼 메모리를 가지고 있다
+- size : 그 중 일부만 사용하는데 그 크기임.
+
+
+
+```cpp
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+int main()
+{
+	// int *v_ptr = new int[3]{1, 2, 3};
+
+	std::vector<int> v{ 1, 2, 3 };
+
+	// size, capacity(용량)
+	
+	for (auto& e : v)
+		cout << e << " ";
+	cout << endl;
+
+	return 0;
+}
+```
+
+
+
+```cpp
+	cout << v.size() << " " << v.capacity() << endl; // 3
+	
+	v.resize(10);
+
+	cout << v.size() << " " << v.capacity() << endl;
+
+	for (auto& e : v)
+		cout << e << " ";
+	cout << endl;
+
+	v.resize(2);
+
+	for (auto& e : v)
+		cout << e << " ";
+	cout << endl;
+```
+
+사이즈를 늘릴 때는 size, capacity가 늘어나지만, 사이즈를 줄이면 capacity는 줄어들지 않는다.
+
+사이즈를 2까지 줄인 다음에 `v.at(2)`으로 강제로 불러보면 runtime error가 발생
+
+강제로 포인터를 가져와보자
+
+```cpp
+int *ptr = v.data();
+
+cout << ptr[2] << endl; // 3
+```
+
+억지로 가지고 와진다.
+
+
+
+2개로 작게 resize를 했을 때 전체 갯수 중에 복사한 다음 뒷 부분을 지우면 메모리를 더 잘 쓸 수 있을 것. 하지만 vector는 속도를 위해 메모리를 희생했다. 그러므로 리사이즈 해도 원래의 element를 가지고 있는 것. size는 변하지만 capacity는 변하지 않는다는 점에서도 확인할 수 있다.
+
+
+
+### 원래 벡터를 출력하는 방법
+
+```cpp
+for (unsigned int i = 0; i < v.size(); ++i)
+    cout << v[i] << " ";
+cout << endl;
+```
+
+
+
+### reserve
+
+```cpp
+	v.reserve(1024);
+```
+
+size는 그대로, capacity를 1024로 늘리는 작업 -> 나중에 동적으로 element를 추가할 때 추가하는 속도가 빨라짐
+
+
+
+### stack with vector
+
+재귀호출을 할 때 stack overflow가 나면 -> vector를 stack으로 사용하는 경우가 있다.
+
+```cpp
+void printStack(const std::vector<int>& stack)
+{
+	for (auto& e : stack)
+		cout << e << " ";
+	cout << endl;
+}
+
+
+	// 스택
+	std::vector<int> stack;
+
+	stack.push_back(3);
+	printStack(stack);
+
+	stack.push_back(5);
+	printStack(stack);
+	
+	stack.push_back(7);
+	printStack(stack);
+	
+	stack.pop_back();
+	printStack(stack);
+	
+	stack.pop_back();
+	printStack(stack);
+```
+
+미리 reserve를 해두면 push_back 할 때 속도가 빠르다.
+
+pop은 capacity를 유지한 채로 size만 줄인다 -> 빠를 것
+
+
+
+
+
+## 7.12 재귀적 함수 호출
+
+```cpp
+#include <iostream>
+using namespace std;
+
+void countDown(int count)
+{
+	cout << count << endl;
+	countDown(count - 1);
+}
+
+int main()
+{
+	countDown(5);
+
+	return 0;
+}
+```
+
+코드는 다른 곳에 저장돼있고, 주소를 보고 그 코드를 찾아간다.
+
+
+
+무한 호출을 막기 위해 중단 조건을 설정하자.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+void countDown(int count)
+{
+	cout << count << endl;
+
+	if(count > 0)
+		countDown(count - 1);
+}
+
+int main()
+{
+	countDown(5);
+
+	return 0;
+}
+```
+
+
+
+1부터 N까지의 합을 구하는 재귀 함수
+
+```cpp
+#include <iostream>
+using namespace std;
+
+
+int sumTo(int sumto)
+{
+	if (sumto <= 0)
+		return 0;
+	else if (sumto <= 1)
+		return 1;
+	else
+		return sumTo(sumto - 1) + sumto;
+}
+
+int main()
+{
+	cout << sumTo(4) << endl;
+
+	return 0;
+}
+```
+
+
+
+
+
+### 피보나치 수열
+
+```cpp
+int sumTo(int sumto)
+{
+	if (sumto <= 0)
+		return 0;
+	else if (sumto <= 1)
+		return 1;
+	else
+		return sumTo(sumto - 1) + sumto;
+}
+```
+
+
+
+recursion의 depth에 한계가 있고, performance 가 중요할 때 별로 사용하지 않는 듯하다. 실전에서는 iteration을 많이 사용한다.
 
 
 
