@@ -1349,6 +1349,265 @@ recursion의 depth에 한계가 있고, performance 가 중요할 때 별로 사
 
 
 
+## 7.13 방어적 프로그래밍의 개념
+
+많은 사람들이 사용할 때 에러가 나지 않도록 만드는 게 방어적 프로그래밍.
+
+요즘은 컴파일러가 잘 돼있어서 컴파일러가 미리 잡아낼 수 있도록 짜는 것도 좋다.
+
+그것보다 문제가 되는 것은 semantic errors
+
+
+
+### sematic erros
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+	// semantic errors
+
+	int x;
+	cin >> x;
+
+	if (x >= 5)
+		cout << "x is greater than 5" << endl;
+
+	return 0;
+}
+```
+
+x가 5와 같을 경우를 포함하고 있다 -> **논리** **오류**
+
+이건 설계자가 아니면 알기 쉽지 않다.
+
+
+
+### violated assumption
+
+사용자가 내가 작성한 방식과는 전혀 다른 방식으로 사용한다.
+
+```cpp
+	// violated assumption
+
+	string hello = "Hello, my name is jack jack";
+
+	int ix;
+	cin >> ix;
+
+	cout << hello[ix] << endl;
+```
+
+ix에 string 길이보다 큰 값을 넣으면 런타임 에러가 뜬다. 이걸 미리 막을 수 있는 것이 방어적 프로그래밍.
+
+
+
+```cpp
+	string hello = "Hello, my name is jack jack";
+
+	cout << "Input from 0 to " << hello.size() - 1 << endl;
+
+	while (true)
+	{
+		int ix;
+		cin >> ix;
+
+		if (ix >= 0 && ix <= hello.size() - 1)
+			cout << hello[ix] << endl;
+		else
+			cout << "Please try again" << endl;
+
+	}
+```
+
+결국 이런 것은 경험과 관련이 있다. 실패의 시간을 가져봐야 한다. 
+
+
+
+
+
+## 7.14 단언하기 assert
+
+컴파일러 도움을 받기.
+
+```cpp
+#include <cassert> // assert.h
+
+int main()
+{
+	assert(false);
+
+	return 0;
+}
+```
+
+디버그 모드일 때만 작동한다. 프로젝트 설정 > C/C++ > Preprocessor에 들어가면 NDebug 설정이 되어있는 것을 볼 수 있다. 여기서는 안 되는 것.
+
+릴리즈 모드에서는 프로그램이 빠르게 돌아야하기 때문에 assert를 빼버린다.
+
+
+
+```cpp
+#include <cassert> // assert.h
+
+int main()
+{
+	//assert(false);
+
+
+	int number = 5;
+	 
+	/// ...
+
+	assert(number = 5);
+	
+
+	return 0;
+}
+```
+
+
+
+다른 예제를 보자
+
+```cpp
+#include <cassert> // assert.h
+#include <array>
+#include <iostream>
+
+using namespace std;
+
+void printValue(const std::array<int, 5>& my_array, const int& ix)
+{
+	assert(ix >= 0);
+	assert(ix <= my_array.size() - 1);
+
+	cout << my_array[ix] << std::endl;
+}
+
+int main()
+{
+
+	std::array<int, 5> my_array{ 1, 2, 3, 4, 5 };
+
+	printValue(my_array, 100);
+
+	return 0;
+}
+```
+
+런타임 에러가 나긴 하지만 어디서 틀렸는지를 assert를 통해 알 수 있다. 다른 프로그래머는 런타임에 assert를 통해 알 수 있는 것.
+
+assert 내부에 && 문을 써줄 수도 있음.
+
+
+
+### static assert
+
+컴파일 타임에 결정이 되는 경우에만 쓸 수 있다.
+
+`static_assert(x == 5)`에서 x가 const가 아니면 쓸 수 없다.
+
+인자로 에러 메시지를 남길 수도 있다.
+
+```cpp
+	// static assert
+	const int x = 10;
+	assert(x == 5);
+
+	static_assert(x == 5, "x should be 5");
+```
+
+
+
+
+
+## 7.15 명령줄 인수 command line arguments
+
+main 함수 괄호 안에 매개변수 집어넣는 법
+
+파라미터를 두 가지를 넣을 수 있다.
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int main(int argc, char *argv[]) // 개수, 내용
+{
+	for (int count = 0; count < argc; ++count)
+	{
+		cout << argv[count] << endl; // 실행파일 경로(이름) 출력
+	}
+	
+
+
+	return 0;
+}
+```
+
+1. x86 native tools command prompt에서 해당 프로그램을 실행할 수도 있다. 프로그램 경로 + "출력할 명령어"를 띄어쓰기 구분으로 써준다.
+2. 다른 방법은 프로젝트 설정 > debugging >  command arguments에 my_program '100 1024 3.14' 입력
+
+
+
+### string으로 처리하기
+
+```cpp
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+int main(int argc, char *argv[]) // 개수, 내용
+{
+	for (int count = 0; count < argc; ++count)
+	{
+		std::string argv_single = argv[count];
+
+		if (count == 1) // 0번은 실행파일 path
+		{
+			int input_number = std::stoi(argv_single); // 정수로 바꿔주기
+			cout << input_number + 1 << endl;
+		}
+		cout << argv[count] << endl; // 실행파일 경로(이름) 출력
+	}
+	
+
+
+	return 0;
+}
+```
+
+
+
+### boost library - commandline options
+
+커맨드라인을 좀 더 편하게 쓸 수 있다.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
