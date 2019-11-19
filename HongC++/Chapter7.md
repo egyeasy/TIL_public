@@ -1592,7 +1592,43 @@ int main(int argc, char *argv[]) // 개수, 내용
 
 
 
+## 7.16 생략부호 Ellipsis
 
+함수의 인자로 개수를 정해서 받고 싶지 않을 때
+
+```cpp
+#include <iostream>
+#include <cstdarg> // for ellipsis
+using namespace std;
+
+double findAverage(int count, ...)
+{
+	double sum = 0;
+
+	va_list list; // 문자열로 받는다.
+
+	va_start(list, count); // 두 번째 인자로 들어오는 arg의 개수를 알려준다
+
+	for (int arg = 0; arg < count; ++arg)
+		sum += va_arg(list, int);
+
+	va_end(list);
+
+	return sum / count;
+}
+
+int main()
+{
+	cout << findAverage(1, 1, 2, 3, "Hello", 'c') << endl; // 1개만 되고 나머지는 무시됨
+	cout << findAverage(3, 1, 2, 3) << endl;
+	cout << findAverage(5, 1, 2, 3, 4, 5) << endl;
+	cout << findAverage(10, 1, 2, 3, 4, 5) << endl; // 이상한 숫자가 도출
+}
+```
+
+but 디버깅하기 힘들고 런타임에서 오류가 나면 막막할 때가 있어서 쉽지 않다.
+
+최근에는 모던 C++ 문법을 사용해서 하려고 노력함.
 
 
 
