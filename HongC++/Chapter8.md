@@ -374,6 +374,284 @@ public:
 
 
 
+## 8.3 생성자 Constructors
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+class Fraction
+{
+private:
+	int m_numerator;
+	int m_denominator;
+
+public:
+	void print()
+	{
+		cout << m_numerator << " / " << m_denominator << endl;
+	}
+};
+
+int main()
+{
+	Fraction frac;
+
+	frac.print();
+
+	return 0;
+}
+
+```
+
+이렇게 쓰면 이상한 숫자가 출력된다. 이것은 멤버변수를 초기화해주지 않았기 때문.
+
+
+
+encapsulation을 유지하면서 값을 대입할 수 없을까?
+
+### 기본값 설정
+
+```cpp
+class Fraction
+{
+private:
+	int m_numerator = 0;
+	int m_denominator = 1;
+
+public:
+	void print()
+	{
+		cout << m_numerator << " / " << m_denominator << endl;
+	}
+};
+```
+
+
+
+### 생성자 기본값
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+class Fraction
+{
+private:
+	int m_numerator = 0;
+	int m_denominator = 1;
+
+public:
+	Fraction()
+	{
+		m_numerator = 0;
+		m_denominator = 1;
+
+		cout << "Fraction() Constructor" << endl;
+	}
+	void print()
+	{
+		cout << m_numerator << " / " << m_denominator << endl;
+	}
+};
+
+int main()
+{
+	Fraction frac; // 생성자가 하나도 없을 때 반드시 괄호를 빼야함
+
+
+	frac.print();
+
+	return 0;
+}
+
+```
+
+
+
+
+
+### 생성자 값 넣어주기
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+class Fraction
+{
+private:
+	int m_numerator = 0;
+	int m_denominator = 1;
+
+public:
+	Fraction(const int& num_in, const int& denom_in = 1) // default 설정 가능
+	{
+		m_numerator = num_in;
+		m_denominator = denom_in;
+
+		cout << "Fraction() Constructor" << endl;
+	}
+	void print()
+	{
+		cout << m_numerator << " / " << m_denominator << endl;
+	}
+};
+
+int main()
+{//Fraction frac; // 생성자가 하나도 없을 때 반드시 괄호를 빼야함(function과 구분이 잘 안가기 때문)
+	Fraction one_thirds(1, 3);
+	one_thirds.print();
+
+
+	//frac.print();
+
+	return 0;
+}
+
+```
+
+
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+class Fraction
+{
+private:
+	int m_numerator;
+	int m_denominator;
+
+public:
+	//Fraction(const int& num_in, const int& denom_in)
+	//{
+	//	m_numerator = num_in;
+	//	m_denominator = denom_in;
+
+	//	cout << "Fraction() Constructor" << endl;
+	//}
+	void print()
+	{
+		cout << m_numerator << " / " << m_denominator << endl;
+	}
+};
+```
+
+이렇게 돼도 클래스를 만들 수는 있다. 이 경우 디폴트 생성자가 적용된다. 그러면 멤버 변수에는 쓰레기 값이 들어가게 된다.
+
+생성자 하나만이라도 정의를 하면 기본 생성자가 설정되지 않는다.
+
+변수를 안 받고 싶다면 파라미터 없이 만드는 생성자를 정의 직접 해줘야함.
+
+```cpp
+class Fraction
+{
+private:
+	int m_numerator = 0;
+	int m_denominator = 1;
+
+public:
+	Fraction()
+	{
+		m_numerator = 1;
+		m_denominator = 1;
+	}
+	Fraction(const int& num_in, const int& denom_in)
+	{
+		m_numerator = num_in;
+		m_denominator = denom_in;
+
+		cout << "Fraction() Constructor" << endl;
+	}
+	void print()
+	{
+		cout << m_numerator << " / " << m_denominator << endl;
+	}
+};
+
+int main()
+{
+	//Fraction frac; // 생성자가 하나도 없을 때 반드시 괄호를 빼야함
+	Fraction one_thirds(1, 3);
+	one_thirds.print();
+
+	Fraction one;
+	one.print();
+
+```
+
+아래의 생성자에 두 파라미터 모두 기본값을 생성하면 Fraction one이 안 만들어진다.
+
+
+
+### Copy initialization
+
+```cpp
+Fraction one_thirds = Fraction{ 1, 3 };
+```
+
+아래를 더 권장
+
+```cpp
+Fraction one_thirds{ 1, 3 };
+```
+
+위 방식(uniform initialization)은 타입 변환을 허용하지 않는다. 
+
+```cpp
+Fraction one_thirds(1, 3);
+```
+
+이건 warning만 뜨고 되긴 된다.
+
+
+
+
+
+### 클래스 안의 클래스
+
+```cpp
+class Second
+{
+public:
+	Second()
+	{
+		cout << "class Second constructor()" << endl;
+	}
+};
+
+class First
+{
+	Second sec;
+public:
+	First()
+	{
+		cout << "class First constructor()" << endl;
+	}
+};
+
+
+	First fir;
+```
+
+Second가 먼저 만들어지고 First가 만들어진다. Second가 만들어져 있어야 Frist가 Second를 가지고 작업을 할 수 있기 때문.
+
+
+
+### private 생성자
+
+생성자를 private으로 하는 건 말도 안되지만 이걸 쓰는 프로그래밍 기법이 따로 있음.
+
+
+
+
+
+
+
 
 
 
