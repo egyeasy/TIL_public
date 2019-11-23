@@ -1296,6 +1296,873 @@ but std::vector에서 알아서 잘 해줌.
 
 
 
+## 6.14 참조 변수 reference variable
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+	int value = 5;
+
+	// pointer
+	int* ptr = nullptr;
+	ptr = &value;
+
+	// reference
+	int& ref = value;
+
+	cout << ref << endl;
+
+	ref = 10;
+
+	cout << value << " " << ref << endl;
+
+
+	
+	return 0;
+}
+```
+
+메모리 주소를 공유하는 변수를 만들 수 있음. 별명처럼 사용할 수 있다.
+
+
+
+주소를 찍어보면 재밌다.
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+	int value = 5;
+
+	// pointer
+	int* ptr = nullptr;
+	ptr = &value;
+
+	// reference
+	int& ref = value;
+
+	cout << ref << endl;
+
+	ref = 10; // *ptr = 10;
+
+	cout << value << " " << ref << endl;
+
+
+	cout << &value << endl;
+	cout << &ref << endl;
+	cout << ptr << endl;
+	cout << &ptr << endl;
+
+	
+	return 0;
+}
+```
+
+value와 ref는 같은 주소를 공유한다.
+
+
+
+### 특징
+
+- ref는 반드시 초기화(값 할당) 되어야 함
+
+- literal(`104`와 같은 상수)은 들어갈 수 없음
+
+- const 문제
+
+  ```cpp
+  	int x = 5;
+  	int& ref2 = x;
+  	
+  	const int y = 8;
+  	//int& ref2 = y; // 불가함 - ref2가 막 바꿔버릴 수도 있기 때문
+  	const int& ref2 = y;
+  ```
+
+- 재할당 가능
+
+  ```CPP
+  
+  	int value1 = 5;
+  	int value2 = 10;
+  
+  	int& ref3 = value1;
+  
+  	cout << ref3 << endl;
+  
+  	ref3 = value2;
+  
+  	cout << ref3 << endl;
+  
+  ```
+
+  
+
+### 함수 인자
+
+```cpp
+void doSomething(int n)
+{
+	n = 10;
+	cout << "in doSth " << n << endl;
+}
+
+
+	int n = 5;
+	cout << n << endl; //5
+
+	doSomething(n);
+
+	cout << n << endl; //5
+```
+
+n이 복사가 돼서 main 변수에 영향을 주지 않는다.
+
+영향을 주려면 어떻게 해야할까?
+
+```cpp
+void doSomething2(int &n)
+{
+	n = 10;
+	cout << "in doSth " << n << endl;
+}
+
+	cout << n << endl;
+
+	doSomething2(n);
+
+	cout << n << endl;
+
+```
+
+레퍼런스를 쓰면 변수 자체를 넘기는 것. 편리함.
+
+값, 주소조차도 복사를 할 필요가 없다 -> 효율이 좋다.
+
+
+
+그런데 레퍼런스를 함수 단에서 고칠 수 없게 하려면 어떡할까? const로 막을 수 있다.
+
+```cpp
+void doSomething2(const int &n)
+{
+	// n = 10;
+	cout << "in doSth " << n << endl;
+}
+```
+
+```cpp
+void printElements(int(&arr)[5]) // 개수 표시해야 함
+{
+	for (int i = 0; i < 5; i++)
+	{
+		// do sth
+	}
+}
+```
+
+
+
+### struct
+
+```cpp
+struct Something
+{
+	int v1;
+	float v2;
+};
+
+struct Other
+{
+	Something st;
+};
+
+	Other ot;
+	ot.st.v1 = 1.0; // 계속해서 안으로 들어가기가 귀찮다
+
+	int& v1 = ot.st.v1;
+	v1 = 1;
+```
+
+
+
+
+
+### 레퍼런스와 포인터의 비교
+
+기능상 동일하다
+
+```cpp
+	int value4 = 5;
+	int* const ptr4 = &value4; // 주소를 못 바꾸는 것
+	int& ref4 = value4;
+```
+
+
+
+
+
+## 참조와 const
+
+참조는 함수의 파라미터로 사용할 때 아주 편리하다.
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+	int x = 5;
+	int& ref_x = x;
+	const int& ref_x = x;
+
+	const int x2 = 5;
+	const int& ref2_x = x2;
+	
+
+	return 0;
+}
+```
+
+x를 const로 선언하고 ref에서 const를 선언하지 않으면 안 된다
+
+
+
+```cpp
+
+	const int& ref_x2 = 3 + 4;
+
+	cout << ref_x2 << endl;
+	cout << &ref_x2 << endl;
+```
+
+그냥 int와의 차이가 뭘까? 함수 파라미터로 넣을 때 아주 유용
+
+
+
+```cpp
+void doSomething(const int x)
+{
+	cout << x << endl;
+}
+
+void doSomething2(const int& x) // 변수 복사 없이 가능
+{
+	cout << x << endl;
+}
+
+	int a = 1;
+
+	cout << endl;
+
+	doSomething(a);
+	doSomething(a + 2);
+	doSomething(3);
+
+	doSomething2(a);
+	doSomething2(3);
+	doSomething2(a + 3);
+```
+
+
+
+
+
+## 6.16 포인터와 참조의 멤버 선택
+
+포인터나 참조를 통해 구조체나 클래스의 멤버를 접근할 수 있다.
+
+
+
+```cpp
+#include <iostream>
+
+struct Person
+{
+	int age;
+	double weight;
+
+};
+
+int main()
+{
+	Person person;
+
+	person.age = 5;
+	person.weight = 30;
+
+	Person& ref = person;
+	ref.age = 15;
+	
+	// 포인터는 좀 다르다
+	Person* ptr = &person;
+	ptr->age = 30;
+
+	return 0;
+}
+```
+
+
+
+```cpp
+#include <iostream>
+
+struct Person
+{
+	int age;
+	double weight;
+
+};
+
+int main()
+{
+	Person person;
+
+	person.age = 5;
+	person.weight = 30;
+
+	Person& ref = person;
+	ref.age = 15;
+	
+	// 포인터는 좀 다르다
+	Person* ptr = &person;
+	ptr->age = 30;
+	(*ptr).age = 20; // dereference를 쓰면 점으로 접근 가능
+	
+	Person& ref2 = *ptr;
+	ref2.age = 45;
+
+	std::cout << &person << std::endl;
+	std::cout << &ref2 << std::endl;
+
+	return 0;
+}
+```
+
+
+
+
+
+## 6.17 C++11 For-each 반복문
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+	int fibonacci[] = { 0, 1, 1, 2, 3, 5, 8, 13,
+							21, 34, 55, 89 };
+
+	for (int number : fibonacci)
+		cout << number << " ";
+	cout << endl;
+}
+```
+
+
+
+### 값을 바꿔보자
+
+```cpp
+
+	// change
+	for (int number : fibonacci)
+		number = 10;
+
+
+	for (int number : fibonacci)
+		cout << number << " ";
+	cout << endl;
+```
+
+값이 그대로다. 함수 파라미터 성격으로 전달 되기 때문 -> 이걸 ref를 활용하여 변경 가능하게 만들어줄 수 있다.
+
+
+
+```cpp
+	// change
+	for (int& number : fibonacci)
+		number = 10;
+
+
+	for (int number : fibonacci)
+		cout << number << " ";
+	cout << endl;
+```
+
+
+
+### auto
+
+```cpp
+	// change
+	for (auto& number : fibonacci)
+		number = 10;
+
+
+	for (auto number : fibonacci)
+		cout << number << " ";
+	cout << endl;
+```
+
+
+
+### const
+
+일반적으로 이렇게 쓴다.
+
+```cpp
+	// change
+	for (auto& number : fibonacci)
+		number = 10;
+
+
+	for (const auto number : fibonacci)
+		cout << number << " ";
+	cout << endl;
+
+```
+
+
+
+### 가장 큰 숫자 찾기
+
+```cpp
+	int max_number = std::numeric_limits<int>::lowest();
+
+	for (const auto& n : fibonacci)
+		max_number = std::max(max_number, n);
+
+	cout << max_number << endl;
+	
+```
+
+
+
+array를 동적 할당하면 for each를 쓸 수 없다.
+
+대신 vector를 쓰면 더 좋다.
+
+
+
+### vector
+
+```cpp
+#include <vector>
+
+
+	vector<int> fibonacci = { 0, 1, 1, 2, 3, 5, 8, 13,
+							21, 34, 55, 89 };
+```
+
+위에서와 같이 동일하게 쓸 수 있다.
+
+
+
+
+
+## 6.18 보이드 포인터 void pointers
+
+포인터는 주소다.자료형과 상관없이 포인터를 저장할 수 있지 않을까?
+
+void pointer는 generic(포괄적) pointer라고도 불린다.
+
+
+
+```cpp
+#include <iostream>
+
+int main()
+{
+	int		i = 5;
+	float	f = 3.0;
+	char	c = 'a';
+
+	void* ptr = nullptr;
+
+	ptr = &i;
+	ptr = &f;
+	ptr = &c;
+
+
+
+
+	return 0;
+}
+```
+
+이렇게 써도 문제가 없다.
+
+
+
+but 실제로 어떤 타입이 들어갔는지 알 방법이 없다.
+
+또한 포인터 연산이 불가함
+
+```cpp
+cout << ptr + 1 << endl; // 몇바이트 더해야 하는지 알 수 없음
+```
+
+
+
+de-reference도 불가
+
+```cpp
+	cout << *ptr << endl;
+```
+
+
+
+casting 해줘야한다.
+
+```cpp
+	cout << *static_cast<float*>(ptr) << endl;
+```
+
+
+
+다형성 구현을 하다보면 부득이하게 이렇게 써야 하는 경우가 있다.
+
+```cpp
+enum Type
+{
+	INT,
+	FLOAT,
+	CHAR
+};
+
+	Type type = FLOAT;
+
+	if (type == FLOAT)
+		cout << *static_cast<float*>(ptr) << endl;
+	else if(type == INT)
+		cout << *static_cast<int*>(ptr) << endl;
+
+```
+
+
+
+but 최근에는 새로운 문법으로 더 편하게 쓸 수 있다.
+
+
+
+
+
+## 6.19 다중 포인터와 동적 다차원 배열
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+	int* ptr = nullptr;
+	int** ptrptr = nullptr;
+
+	int value = 5;
+
+	ptr = &value;
+	ptrptr = &ptr;
+
+	cout << ptr << " " << *ptr << " " << &ptr << endl;
+	cout << ptrptr << " " << *ptrptr << " " << &ptrptr << endl;
+	cout << **ptrptr << endl;
+
+	return 0;
+}
+```
+
+삼중, 사중 포인터도 가능. 실제로 잘 사용하지는 않는다.
+
+
+
+### 이중 포인터 이차원 행렬 구현
+
+```cpp
+	int* r1 = new int[col] {1, 2, 3, 4, 5};
+	int* r2 = new int[col] {6, 7, 8, 9, 10};
+	int* r3 = new int[col] {11, 12, 13, 14, 15};
+
+	// integer pointer의 array를 만들자
+	int** rows = new int* [row] {r1, r2, r3};
+
+	for (int r = 0; r < row; ++r)
+	{
+		for (int c = 0; c < col; ++c)
+			cout << rows[r][c] << " ";
+		cout << endl;
+	}
+
+	delete[] r1;
+	delete[] r2;
+	delete[] r3;
+	delete[] rows;
+```
+
+
+
+for 문으로 delete를 하게 해보자.
+
+
+
+```cpp
+	const int row = 3;
+	const int col = 5;
+
+	const int s2da[row][col] =
+	{
+	{1, 2, 3, 4, 5},
+	{6, 7, 8, 9, 10},
+	{11, 12, 13, 14, 15}
+	};
+
+	// integer pointer의 array를 만들자
+	int** matrix = new int* [row];
+
+	for (int r = 0; r < row; ++r)
+		matrix[r] = new int[col];
+
+
+	for (int r = 0; r < row; ++r)
+	{
+		for (int c = 0; c < col; ++c)
+		{
+			matrix[r][c] = s2da[r][c];
+			cout << matrix[r][c] << " ";
+		}
+		cout << endl;
+	}
+
+	// delete
+	for (int r = 0; r < row; ++r)
+		delete matrix[r];
+
+	delete[] matrix;
+```
+
+
+
+### 이중 포인터 쓰지 않기
+
+```cpp
+	// 2차원으로 만들지 않는 법
+	int* matrix2 = new int[row*col];
+
+	for (int r = 0; r < row; ++r)
+	{
+		for (int c = 0; c < col; ++c)
+		{
+			matrix2[c + col * r] = s2da[r][c];
+			cout << matrix2[c + col * r] << " ";
+		}
+		cout << endl;
+	}
+
+	// delete
+	delete[] matrix2;
+
+```
+
+
+
+
+
+## 6.20 std::array 소개
+
+```cpp
+#include <iostream>
+#include <array>
+
+using namespace std;
+
+int main()
+{
+	// int array[5] = { 1, 2, 3, 4, 5 }
+
+	array<int, 5> my_arr = { 1, 2, 3, 4, 5 };
+	my_arr = { 0, 1, 2, 3, 4 };
+	my_arr = { 0, 1, 2 }; // 나머지는 0으로 채워짐
+
+	cout << my_arr[0] << endl;
+	cout << my_arr.at(0) << endl; // 똑같이 작동
+
+
+}
+```
+
+at을 사용하면 미리 번지를 체크해보고 에러가 나면 예외처리를 발동. 대신 좀 더 느리다. 퍼포먼스가 아주 중요한 프로그램을 만들 때는 전자를 사용.
+
+
+
+```cpp
+#include <iostream>
+#include <array>
+
+using namespace std;
+
+void printLength(array<int, 5> my_array)
+{
+	cout << my_array.size() << endl;
+}
+
+int main()
+{
+	// int array[5] = { 1, 2, 3, 4, 5 }
+
+	array<int, 5> my_arr = { 1, 2, 3, 4, 5 };
+	my_arr = { 0, 1, 2, 3, 4 };
+	my_arr = { 0, 1, 2 }; // 나머지는 0으로 채워짐
+
+	cout << my_arr[0] << endl;
+	cout << my_arr.at(0) << endl; // 똑같이 작동
+
+	cout << my_arr.size() << endl;
+
+}
+```
+
+함수에 넣을 경우 array에 복사가 된다. 클 경우에 시간이 오래 걸림
+
+원래 배열을 변경하고 싶을 경우 레퍼런스를 쓰면 편하다.(변경하고 싶지 않다면 const)
+
+```cpp
+void printLength(const array<int, 5>& my_array)
+{
+	cout << my_array.size() << endl;
+}
+
+```
+
+
+
+### for each
+
+```cpp
+	for (auto &element : my_arr)
+		cout << element << " ";
+	cout << endl;
+```
+
+
+
+### sort
+
+sorting을 할 구간을 선택해야 한다.
+
+```cpp
+	std::sort(my_arr.begin(), my_arr.end());
+
+	for (auto& element : my_arr)
+		cout << element << " ";
+	cout << endl;
+```
+
+내림차순으로 정렬하려면?
+
+```cpp
+	std::sort(my_arr.rbegin(), my_arr.rend());
+```
+
+
+
+
+
+## 6.21 std::vector 소개
+
+정적 배열에 array가 있다면 동적 배열에 vector
+
+```cpp
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+int main()
+{
+	// std::array<int, 5> array; // 사이즈를 반드시 적어줘야
+	std::vector<int> array; // 필수가 아님
+
+	std::vector<int> array2 = { 1, 2, 3, 4, 5 };
+
+	cout << array2.size() << endl; // 5
+
+	std::vector<int> array3 = { 1, 2, 3 };
+
+	cout << array3.size() << endl; // 3
+
+	std::vector<int> array4 = { 1, 2, 3, };
+
+	cout << array4.size() << endl; // 3
+
+}
+```
+
+
+
+
+
+### foreach
+
+```cpp
+	vector<int> arr = { 1,2, 3, 4,5 };
+
+	for (auto& itr : arr)
+		cout << itr << " ";
+	cout << endl;
+```
+
+
+
+### at
+
+```cpp
+	cout << arr[1] << endl;
+	cout << arr.at(1) << endl;
+```
+
+
+
+### delete?
+
+delete을 해줄 필요가 없다. block을 벗어나면 알아서 없어짐. delete의 부담을 줄여준다.
+
+배열의 길이를 스스로 알고 있다. 그냥 배열은 길이를 알 수가 없다.
+
+```cpp
+	cout << arr.size() << endl;
+```
+
+
+
+### resize 가능
+
+```cpp
+	arr.resize(10);
+
+	arr.push_back(333);
+```
+
+줄이는 것도 가능하다. 뒤의 것들이 날아감.
+
+
+
+
+
+
+
+
+
 
 
 
