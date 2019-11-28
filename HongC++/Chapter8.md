@@ -1013,7 +1013,238 @@ array 대신에 vector를 쓰면 알아서 소멸자 메커니즘이 적용돼 �
 
 
 
+## 8.7 this 포인터와 연쇄 호출 Chaining Member Functions
 
+서로 다른 인스턴스를 어떻게 구분할까
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Simple
+{
+private:
+	int m_id;
+
+public:
+	Simple(int id)
+	{
+		setId(id);
+
+		cout << this << endl;
+	}
+
+	void setId(int id) { m_id = id; }
+	int	 getId() { return m_id; }
+};
+
+
+int main()
+{
+	Simple s1(1), s2(2);
+	s1.setId(2);
+	s2.setId(4);
+
+	cout << &s1 << " " << &s2;
+
+}
+```
+
+
+
+
+
+### this는 멤버 function에서 생략된다
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Simple
+{
+private:
+	int m_id;
+
+public:
+	Simple(int id)
+	{
+		this->setId(id); //  일반적으로 this->가 생략돼있는 것
+		//(*this).setId(id); // 이것도 가능
+
+		cout << this << endl;
+	}
+
+	void setId(int id) { m_id = id; }
+	int	 getId() { return m_id; }
+};
+
+
+int main()
+{
+	Simple s1(1), s2(2);
+	s1.setId(2);
+	s2.setId(4);
+
+	cout << &s1 << " " << &s2;
+
+}
+```
+
+
+
+main에서는 `Simple::setId(&s2, 4);`와 같은 방식으로 함수를 한 곳에 저장해두고 인스턴스 주소를 함께 넘겨줘서 실행한다.
+
+
+
+### chaining member function
+
+```cpp
+
+class Calc
+{
+private:
+	int m_value;
+
+public:
+	Calc(int init_value)
+		: m_value(init_value)
+	{}
+
+	void add(int value) { m_value += value; }
+	void sub(int value) { m_value -= value; }
+	void mult(int value) { m_value *= value; }
+
+	void print()
+	{
+		cout << m_value << endl;
+	}
+};
+
+	Calc cal(10);
+	cal.add(10);
+	cal.sub(1);
+	cal.mult(2);
+	cal.print();
+}
+```
+
+
+
+이게 좀 귀찮다면
+
+```cpp
+class Calc
+{
+private:
+	int m_value;
+
+public:
+	Calc(int init_value)
+		: m_value(init_value)
+	{}
+
+	Calc& add(int value) { m_value += value; return *this; }
+	Calc& sub(int value) { m_value -= value; return *this; }
+	Calc& mult(int value) { m_value *= value; return *this; }
+
+	void print()
+	{
+		cout << m_value << endl;
+	}
+};
+
+
+
+	Calc cal(10);
+	cal.add(10).sub(1).mult(2).print();
+```
+
+
+
+```cpp
+Calc cal(10);
+Calc &temp1 = cal.add(10);
+Calc &temp2 = temp1.sub(1);
+Calc &temp3 = temp2.mult(2);
+temp3.print();
+```
+
+
+
+
+
+## 클래스 코드와 헤더 파일
+
+
+
+헤더에서는 using namespace std를 안 쓰는 것이 좋다.
+
+
+
+### main.cpp
+
+```cpp
+#include "Calc.h"
+
+int main()
+{
+
+	Calc cal(10);
+	cal.add(10).sub(1).mult(2).print();
+}
+```
+
+
+
+
+
+### Calc.h
+
+```cpp
+#pragma once
+
+#include <iostream>
+
+
+class Calc
+{
+private:
+	int m_value;
+
+public:
+	Calc(int init_value)
+		: m_value(init_value)
+	{}
+
+	Calc& add(int value);
+	Calc& sub(int value);
+	Calc& mult(int value);
+
+	void print();
+};
+
+```
+
+어떤 경우엔 정의를 헤더에 넣는 걸 권장하는 경우가 있다. template로 구현된 body를 소스에서 구현하기에 번잡할 수도 있음. 
+
+
+
+### Calc.cpp
+
+```cpp
+#include "Calc.h"
+
+
+Calc& Calc::add(int value) { m_value += value; return *this; }
+Calc& Calc::sub(int value) { m_value -= value; return *this; }
+Calc& Calc::mult(int value) { m_value *= value; return *this; }
+
+void Calc::print()
+{
+	using namespace std;
+	cout << m_value << endl;
+}
+```
 
 
 
