@@ -1250,6 +1250,142 @@ void Calc::print()
 
 
 
+## 8.9 클래스와 const
+
+const 인스턴스를 선언하면 member function이 const냐 아니냐가 중요
+
+함수가 const여야만 쓸 수 있다.
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+class Something
+{
+public:
+	int m_value = 0;
+
+	void setValue(int value) // 여기엔 const를 달 수 없다. 멤버 변수를 변경하고 있기 때문
+	{
+		m_value = value;
+	}
+
+	int getValue() const
+	{
+		return m_value;
+	}
+
+};
+
+
+```
+
+
+
+
+
+함수의 인자는 복사가 돼서 들어간다고 했다. 클래스도 복사가 되지만 copy constructor가 작동하며 만들어진다.
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+class Something
+{
+public:
+	// copy constructor - 복사할 때 실행되는 constructor
+	Something(const Something& st_in)
+	{
+		m_value = st_in.m_value;
+
+		cout << "Copy constructor" << endl;
+	}
+
+	Something()
+	{
+		cout << "contructor" << endl;
+	}
+	int m_value = 0;
+
+	void setValue(int value) // 여기엔 const를 달 수 없다. 멤버 변수를 변경하고 있기 때문
+	{
+		m_value = value;
+	}
+
+	int getValue() const
+	{
+		return m_value;
+	}
+
+};
+
+void print(Something st)
+{
+	cout << &st << endl;
+
+	cout << st.m_value << endl;
+}
+
+int main()
+{
+	class Something something;
+	//something.setValue(3);
+
+	cout << something.getValue() << endl;
+	
+	cout << &something << endl;
+
+	print(something);
+    
+	return 0;
+}
+```
+
+
+
+복사를 하고 싶지 않다면 어떻게 해야할까? 인자를 const 레퍼런스로 받으면 된다. 이렇게 하면 최적화가 됨.
+
+```cpp
+void print(const Something& st)
+{
+	cout << &st << endl;
+
+	cout << st.m_value << endl;
+}
+```
+
+
+
+const 여부에 따라 오버로딩을 할 수 있다.
+
+
+
+```cpp
+	string s_value = "default";
+	const string& getSValue() const {
+		cout << "const version";
+		return s_value;
+	}
+	string& getSValue() {
+		cout << "non const version";
+		return s_value;
+	}
+
+
+
+	Something something1;
+	something1.getSValue() = "5fv"; // 값을 바꿔줄 수 있다.
+
+	const Something something2;
+	something2.getSValue(); // 바꿀 수 없다.
+```
+
+
+
+
+
 
 
 
