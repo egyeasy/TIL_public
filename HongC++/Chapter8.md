@@ -650,17 +650,737 @@ Second가 먼저 만들어지고 First가 만들어진다. Second가 만들어�
 
 
 
+## 8.4 생성자 멤버 초기화 목록
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class B
+{
+public:
+	int m_b;
+
+public:
+	B(const int& m_b_in)
+		: m_b(m_b_in)
+	{}
+};
+
+class Something
+{
+private:
+	int		m_i;
+	float	m_d;
+	char	m_c;
+	int		m_arr[5]; // c++ 11 부터 가능
+	B		m_b;
+
+public:
+	Something()
+		: m_i(1), m_d(3.14), m_c('a'), m_arr{ 1, 2, 3, 4 ,5 }, m_b(m_i - 1) // 중괄호를 쓰면 형변환이 안된다(더 엄격하다)
+	{
+		/*m_i = 1;
+		m_d = 3.14;
+		m_c = 'a';*/
+	}
+
+	void print()
+	{
+		cout << m_i << " " << m_d << " " << m_c << endl;
+	}
+
+};
+```
 
 
 
 
 
+### 바로 초기화하기
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class B
+{
+public:
+	int m_b;
+
+public:
+	B(const int& m_b_in)
+		: m_b(m_b_in)
+	{}
+};
+
+class Something
+{
+private:
+	int		m_i = 100;
+	float	m_d = 100.0;
+	char	m_c = 'F';
+	int		m_arr[5] = { 100, 200, 300, 400, 500 }; // c++ 11 부터 가능
+	B		m_b{ 1024 };
+
+public:
+	Something()
+		: m_i(1), m_d(3.14), m_c('a'), m_arr{ 1, 2, 3, 4 ,5 }, m_b(m_i - 1) // 중괄호를 쓰면 형변환이 안된다(더 엄격하다)
+	{
+		/*m_i = 1;
+		m_d = 3.14;
+		m_c = 'a';*/
+	}
+
+	void print()
+	{
+		cout << m_i << " " << m_d << " " << m_c << endl;
+	}
+
+};
+```
+
+이 경우엔 생성자(아래에 있는 내용)가 더 우선이 된다. 그 아래에 주석된 부분은 더 나중에 실행됨. 위에서 아래 순이라고 보면 될듯.
 
 
 
 
 
+## 8_5. 위임 생성자
 
+생성자가 다른 생성자를 사용하는 것.
+
+```cpp
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+class Student
+{
+private:
+	int		m_id;
+	string	m_name;
+public:
+	Student(const int& id_in, const string& name_in)
+		: m_id(id_in), m_name(name_in)
+	{}
+
+	void print()
+	{
+		cout << m_id << " " << m_name << endl;
+	}
+
+};
+
+int main()
+{
+	Student man;
+	
+}
+```
+
+
+
+id_in에 디폴트 값을 넣어주고 싶다면?
+
+```cpp
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+class Student
+{
+private:
+	int		m_id;
+	string	m_name;
+public:
+	Student(const string& name_in)
+		: m_id(0), m_name(name_in)
+    {}
+    
+	Student(const int& id_in, const string& name_in)
+		: m_id(id_in), m_name(name_in)
+	{}
+
+	void print()
+	{
+		cout << m_id << " " << m_name << endl;
+	}
+
+};
+
+int main()
+{
+	Student man;
+	
+}
+```
+
+이것도 가능하지만 굉장히 귀찮아진다.
+
+이 경우 생성자가 생성자를 가져다 쓰게 할 수 있다.
+
+
+
+```cpp
+public:
+	Student(const string& name_in)
+		//: m_id(0), m_name(name_in)
+		: Student(0, name_in)
+	{}
+
+	Student(const int& id_in, const string& name_in)
+		: m_id(id_in), m_name(name_in)
+	{}
+```
+
+
+
+최근 방법으로는 별도의 생성자용 함수를 만들어서 가져다 쓰는 것이 있다.
+
+```cpp
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+class Student
+{
+private:
+	int		m_id;
+	string	m_name;
+public:
+	Student(const string& name_in)
+		//: m_id(0), m_name(name_in)
+	{
+		init(0, name_in);
+	}
+
+	Student(const int& id_in, const string& name_in)
+		//: m_id(id_in), m_name(name_in)
+	{
+		init(id_in, name_in);
+	}
+	
+	void init(const int& id_in, const string& name_in)
+	{
+		m_id = id_in;
+		m_name = name_in;
+	}
+
+	void print()
+	{
+		cout << m_id << " " << m_name << endl;
+	}
+
+};
+
+int main()
+{
+	Student man;
+	
+}
+```
+
+
+
+
+
+## 8.6 소멸자 Destructor
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Simple
+{
+private:
+	int m_id;
+
+public:
+	Simple(const int& id_in)
+		: m_id(id_in)
+	{
+		cout << "Constructor " << m_id << endl;
+	}
+
+	~Simple()
+	{
+		cout << "Destructor " << m_id << endl;
+	}
+	
+};
+
+int main()
+{
+	Simple s1(0);
+	Simple s2(1);
+
+	return 0;
+}
+```
+
+
+
+### new와 delete
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Simple
+{
+private:
+	int m_id;
+
+public:
+	Simple(const int& id_in)
+		: m_id(id_in)
+	{
+		cout << "Constructor " << m_id << endl;
+	}
+
+	~Simple()
+	{
+		cout << "Destructor " << m_id << endl;
+	}
+	
+};
+
+int main()
+{
+	//Simple s1(0);
+	Simple* s1 = new Simple(0);
+	Simple s2(1);
+
+	delete s1;
+
+	return 0;
+}
+```
+
+소멸자는 instance가 메모리에서 해제될 때 내부에서 자동으로 호출됨. 동적할당으로 만들어진 경우에는 영역을 벗어나도 자동으로 메모리가 해제되지 않기 때문에 delete로 메모리를 해제할 때에만 소멸자가 호출됨.
+
+소멸자를 프로그래머가 직접 호출하는 것은 대부분의 경우 권장하지 않음.
+
+
+
+```cpp
+class IntArray
+{
+private:
+	int* m_arr = nullptr;
+	int m_length = 0;
+
+public:
+	IntArray(const int length_in)
+	{
+		m_length = length_in;
+		m_arr = new int[m_length];
+
+		cout << "Constructor " << endl;
+	}
+
+	~IntArray()
+	{
+		if(m_arr != nullptr) // 안전장치
+			delete[] m_arr; // 소멸자를 쓰면 간편하게 메모리를 지우고 사라질 수 있다.
+	}
+
+	int getLength() { return m_length; }
+};
+
+int main()
+{
+	while (true)
+	{
+		IntArray my_int_arr(10000); // 메모리 leak이 발생한다.
+		//delete[] my_int_arr.m_arr; // 이건 접근이 불가하다.
+		
+	}
+
+	return 0;
+}
+```
+
+이렇게 소멸자를 통해 new한 것을 소멸자에서 delete해주면 된다.
+
+array 대신에 vector를 쓰면 알아서 소멸자 메커니즘이 적용돼 있기 때문에 delete 까먹는 걸 걱정하지 않아도 된다.
+
+
+
+
+
+## 8.7 this 포인터와 연쇄 호출 Chaining Member Functions
+
+서로 다른 인스턴스를 어떻게 구분할까
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Simple
+{
+private:
+	int m_id;
+
+public:
+	Simple(int id)
+	{
+		setId(id);
+
+		cout << this << endl;
+	}
+
+	void setId(int id) { m_id = id; }
+	int	 getId() { return m_id; }
+};
+
+
+int main()
+{
+	Simple s1(1), s2(2);
+	s1.setId(2);
+	s2.setId(4);
+
+	cout << &s1 << " " << &s2;
+
+}
+```
+
+
+
+
+
+### this는 멤버 function에서 생략된다
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Simple
+{
+private:
+	int m_id;
+
+public:
+	Simple(int id)
+	{
+		this->setId(id); //  일반적으로 this->가 생략돼있는 것
+		//(*this).setId(id); // 이것도 가능
+
+		cout << this << endl;
+	}
+
+	void setId(int id) { m_id = id; }
+	int	 getId() { return m_id; }
+};
+
+
+int main()
+{
+	Simple s1(1), s2(2);
+	s1.setId(2);
+	s2.setId(4);
+
+	cout << &s1 << " " << &s2;
+
+}
+```
+
+
+
+main에서는 `Simple::setId(&s2, 4);`와 같은 방식으로 함수를 한 곳에 저장해두고 인스턴스 주소를 함께 넘겨줘서 실행한다.
+
+
+
+### chaining member function
+
+```cpp
+
+class Calc
+{
+private:
+	int m_value;
+
+public:
+	Calc(int init_value)
+		: m_value(init_value)
+	{}
+
+	void add(int value) { m_value += value; }
+	void sub(int value) { m_value -= value; }
+	void mult(int value) { m_value *= value; }
+
+	void print()
+	{
+		cout << m_value << endl;
+	}
+};
+
+	Calc cal(10);
+	cal.add(10);
+	cal.sub(1);
+	cal.mult(2);
+	cal.print();
+}
+```
+
+
+
+이게 좀 귀찮다면
+
+```cpp
+class Calc
+{
+private:
+	int m_value;
+
+public:
+	Calc(int init_value)
+		: m_value(init_value)
+	{}
+
+	Calc& add(int value) { m_value += value; return *this; }
+	Calc& sub(int value) { m_value -= value; return *this; }
+	Calc& mult(int value) { m_value *= value; return *this; }
+
+	void print()
+	{
+		cout << m_value << endl;
+	}
+};
+
+
+
+	Calc cal(10);
+	cal.add(10).sub(1).mult(2).print();
+```
+
+
+
+```cpp
+Calc cal(10);
+Calc &temp1 = cal.add(10);
+Calc &temp2 = temp1.sub(1);
+Calc &temp3 = temp2.mult(2);
+temp3.print();
+```
+
+
+
+
+
+## 8.8 클래스 코드와 헤더 파일
+
+
+
+헤더에서는 using namespace std를 안 쓰는 것이 좋다.
+
+
+
+### main.cpp
+
+```cpp
+#include "Calc.h"
+
+int main()
+{
+
+	Calc cal(10);
+	cal.add(10).sub(1).mult(2).print();
+}
+```
+
+
+
+
+
+### Calc.h
+
+```cpp
+#pragma once
+
+#include <iostream>
+
+
+class Calc
+{
+private:
+	int m_value;
+
+public:
+	Calc(int init_value)
+		: m_value(init_value)
+	{}
+
+	Calc& add(int value);
+	Calc& sub(int value);
+	Calc& mult(int value);
+
+	void print();
+};
+
+```
+
+어떤 경우엔 정의를 헤더에 넣는 걸 권장하는 경우가 있다. template로 구현된 body를 소스에서 구현하기에 번잡할 수도 있음. 
+
+
+
+### Calc.cpp
+
+```cpp
+#include "Calc.h"
+
+
+Calc& Calc::add(int value) { m_value += value; return *this; }
+Calc& Calc::sub(int value) { m_value -= value; return *this; }
+Calc& Calc::mult(int value) { m_value *= value; return *this; }
+
+void Calc::print()
+{
+	using namespace std;
+	cout << m_value << endl;
+}
+```
+
+
+
+
+
+## 8.9 클래스와 const
+
+const 인스턴스를 선언하면 member function이 const냐 아니냐가 중요
+
+함수가 const여야만 쓸 수 있다.
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+class Something
+{
+public:
+	int m_value = 0;
+
+	void setValue(int value) // 여기엔 const를 달 수 없다. 멤버 변수를 변경하고 있기 때문
+	{
+		m_value = value;
+	}
+
+	int getValue() const
+	{
+		return m_value;
+	}
+
+};
+
+
+```
+
+
+
+
+
+함수의 인자는 복사가 돼서 들어간다고 했다. 클래스도 복사가 되지만 copy constructor가 작동하며 만들어진다.
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+class Something
+{
+public:
+	// copy constructor - 복사할 때 실행되는 constructor
+	Something(const Something& st_in)
+	{
+		m_value = st_in.m_value;
+
+		cout << "Copy constructor" << endl;
+	}
+
+	Something()
+	{
+		cout << "contructor" << endl;
+	}
+	int m_value = 0;
+
+	void setValue(int value) // 여기엔 const를 달 수 없다. 멤버 변수를 변경하고 있기 때문
+	{
+		m_value = value;
+	}
+
+	int getValue() const
+	{
+		return m_value;
+	}
+
+};
+
+void print(Something st)
+{
+	cout << &st << endl;
+
+	cout << st.m_value << endl;
+}
+
+int main()
+{
+	class Something something;
+	//something.setValue(3);
+
+	cout << something.getValue() << endl;
+	
+	cout << &something << endl;
+
+	print(something);
+    
+	return 0;
+}
+```
+
+
+
+복사를 하고 싶지 않다면 어떻게 해야할까? 인자를 const 레퍼런스로 받으면 된다. 이렇게 하면 최적화가 됨.
+
+```cpp
+void print(const Something& st)
+{
+	cout << &st << endl;
+
+	cout << st.m_value << endl;
+}
+```
+
+
+
+const 여부에 따라 오버로딩을 할 수 있다.
+
+
+
+```cpp
+	string s_value = "default";
+	const string& getSValue() const {
+		cout << "const version";
+		return s_value;
+	}
+	string& getSValue() {
+		cout << "non const version";
+		return s_value;
+	}
+
+
+
+	Something something1;
+	something1.getSValue() = "5fv"; // 값을 바꿔줄 수 있다.
+
+	const Something something2;
+	something2.getSValue(); // 바꿀 수 없다.
+```
 
 
 
