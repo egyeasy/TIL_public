@@ -19,6 +19,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Chapter8_7 this 포인터�
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Chapter8_8 클래스 코드와 헤더 파일", "Chapter8_8 클래스 코드와 헤더 파일\Chapter8_8 클래스 코드와 헤더 파일.vcxproj", "{B673E744-FEB8-4C22-9FE3-21D72BB2E0E0}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Chapter8_9 클래스와 const", "Chapter8_9\Chapter8_9.vcxproj", "{4A1F2F17-01E2-4BB5-989A-DCD17EACA0A2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -91,6 +93,14 @@ Global
 		{B673E744-FEB8-4C22-9FE3-21D72BB2E0E0}.Release|x64.Build.0 = Release|x64
 		{B673E744-FEB8-4C22-9FE3-21D72BB2E0E0}.Release|x86.ActiveCfg = Release|Win32
 		{B673E744-FEB8-4C22-9FE3-21D72BB2E0E0}.Release|x86.Build.0 = Release|Win32
+		{4A1F2F17-01E2-4BB5-989A-DCD17EACA0A2}.Debug|x64.ActiveCfg = Debug|x64
+		{4A1F2F17-01E2-4BB5-989A-DCD17EACA0A2}.Debug|x64.Build.0 = Debug|x64
+		{4A1F2F17-01E2-4BB5-989A-DCD17EACA0A2}.Debug|x86.ActiveCfg = Debug|Win32
+		{4A1F2F17-01E2-4BB5-989A-DCD17EACA0A2}.Debug|x86.Build.0 = Debug|Win32
+		{4A1F2F17-01E2-4BB5-989A-DCD17EACA0A2}.Release|x64.ActiveCfg = Release|x64
+		{4A1F2F17-01E2-4BB5-989A-DCD17EACA0A2}.Release|x64.Build.0 = Release|x64
+		{4A1F2F17-01E2-4BB5-989A-DCD17EACA0A2}.Release|x86.ActiveCfg = Release|Win32
+		{4A1F2F17-01E2-4BB5-989A-DCD17EACA0A2}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
