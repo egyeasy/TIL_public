@@ -158,23 +158,64 @@ CPU는 인터럽트를 받으면 어떤 인터럽트 소스가 발생시켰는�
 
 
 
+## 3-3. Hardware Protection Mechanism
+
+- Protection이 필요한 이유? 자기 영역이 아닌 다른 프로그램이 있을 때 다른 메모리 영역을 엑세스하면 문제가 생김. 이를 해결하기 위해 base register와 bound register를 사용. job이 바뀔 때마다 OS가 값을 바꿔줘야 한다.
+
+- MMU에 있는 base, bound 레지스터는 아무나 할 수 있또록 하면 안된다.(priivileged instruction : OS만 접근할 수 있는 instruction)
+- privilege instruction을 어떻게 구현하는가?
 
 
 
+### Basic Mechanism: Dual mode operation
+
+- Motivation
+
+  수행을 할 때 모드가 2가지가 있다. 모드는 Microprocessor 안의 레지스터가 결정한다(control & status register) -> 최근에 수행했던 여러 상황들을 기억하는 중. 다음 instruction 수행에 영향을 미치기 때문. flag 형태로 기억하는데, 그 중의 한 비트가 mode bit. 0이면 OS 수행(kernel mode, prvileged instruction), 1이면 프로그램(user mode, privileged instruction 수행 불가)
+
+CPU가 fetch하는 과정에서 mode bit를 체크. 누군가가 1 mode인데 privileged instuction을 주면 침해한 것.
+
+컴퓨터 시스템은 기본적으로 유저 프로그램을 신뢰하지 않는다. 프로그램을 짜면 반드시 버그가 있다 -> 악영향을 미칠 수 있는 것.
+
+kernel mode에서 가능한 것
+
+- privileged intstruction 수행
+- 모든 메모리 영역 엑세스
 
 
 
+어떻게 mode change를 통제할 것인가? - 커널모드의 OS가 관장하게 하면 된다. 무한 신뢰의 대상이기 때문. 소프트웨어적인 방법으로는 안된다. 하드웨어적인 방법으로 interrupt가 사용된다. 유저 프로그래밍을 하다가 I/O 엑세스(privileged instruction)가 필요하면, interrupt를 수행시키면 하드웨어적으로 mode bit를 1에서 0으로 바꿔줌.
 
 
 
+### system call
+
+모드 체인지는 인터럽트가 관할하는데, 실제로는 그렇게 낮은 수준의 호출이 이루어지지 않는다.
+
+system call을 통해 이루어진다.
 
 
 
+### 2. I/O Protection
+
+I/O device는 왜 protection해야할까?
+
+1. I/O register에 값을 쓰면 안 됨
+2. I/O device라는 자원을 독점한다면 시스템 비효율
+
+=> I/O instruction을 privileged instruction으로 만든다 = I/O 관련 함수는 커널 내부로 들어간다.
 
 
 
+### 3. Memory Protection
 
 
+
+### 4. CPU Protection
+
+CPU도 I/O나 메모리처럼 자원이다 => monopolize가 문제가 됨.
+
+어떤 job이 CPU가 monopolize하지 않게 하기 위해 특정한 시간 동안만 사용하게 하는 것-> 시간이 끝나면 mode change해서 못 쓰게 만든다.
 
 
 
