@@ -1386,6 +1386,426 @@ const 여부에 따라 오버로딩을 할 수 있다.
 
 
 
+## 8.10 정적 멤버 변수
+
+### 함수
+
+```c++
+int generateID()
+{
+	static int s_id = 0;
+	return ++s_id;
+}
+
+int main()
+{
+	cout << generateID() << endl;
+	cout << generateID() << endl;
+	cout << generateID() << endl;
+	return 0;
+}
+```
+
+
+
+### 클래스
+
+```c++
+#include <iostream>
+using namespace std;
+
+class Something
+{
+public:
+	int m_value = 1;
+};
+
+int main()
+{
+	Something st1;
+	Something st2;
+
+	st1.m_value = 2;
+
+	cout << &st1.m_value << " " << st1.m_value << endl;
+	cout << &st2.m_value << " " << st2.m_value << endl;
+
+	return 0;
+}
+```
+
+두 개의 주소가 다르다.
+
+
+
+멤버 변수를 static int로 하면?
+
+```c++
+#include <iostream>
+using namespace std;
+
+class Something
+{
+public:
+	static int m_value = 1;
+};
+
+int main()
+{
+	Something st1;
+	Something st2;
+
+	st1.m_value = 2;
+
+	cout << &st1.m_value << " " << st1.m_value << endl;
+	cout << &st2.m_value << " " << st2.m_value << endl;
+
+	return 0;
+}
+```
+
+Severity	Code	Description	Project	File	Line	Suppression State	Suppression State
+Error	C2864	'Something::m_value': a static data member with an in-class initializer must have non-volatile const integral type or be specified as 'inline'	Chapter8_10 정적 멤버 변수	C:\Users\dongyoung\TIL_public\HongC++\HongChapter8\8_10 정적 멤버 변수\8_10.cpp	7		
+
+static  member 변수는 이니셜라이즈를 할 수 없다.
+
+
+
+어떻게 해야하냐면
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Something
+{
+public:
+	static int m_value;
+};
+
+int Something::m_value = 1;
+
+int main()
+{
+	Something st1;
+	Something st2;
+
+	st1.m_value = 2;
+
+	cout << &st1.m_value << " " << st1.m_value << endl;
+	cout << &st2.m_value << " " << st2.m_value << endl;
+
+	return 0;
+}
+```
+
+주소가 같고, 같은 값이 나오게 된다. 놀라운 현상.
+
+
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Something
+{
+public:
+	static int m_value;
+};
+
+int Something::m_value = 1; // define in cpp - 헤더에 두면 컴파일 에러가 남(정의는 한 곳에만)
+
+int main()
+{
+	cout << &Something::m_value << " " << Something::m_value << endl;
+
+	Something st1;
+	Something st2;
+
+	st1.m_value = 2;
+
+	cout << &st1.m_value << " " << st1.m_value << endl;
+	cout << &st2.m_value << " " << st2.m_value << endl;
+
+	Something::m_value = 1024;
+
+	cout << &Something::m_value << " " << Something::m_value << endl;
+
+	return 0;
+}
+```
+
+메모리에 정적으로 존재하기 때문에 접근할 수 있다. 
+
+
+
+멤버변수가 static 'const'인 경우 초기화를 클래스 정의 내에서 해줘야 한다.
+
+
+
+### constexpr
+
+런타임에 값이 결정되어 있어야 함
+
+```c++
+#include <iostream>
+using namespace std;
+
+class Something
+{
+public:
+	static constexpr int m_value = 1;
+};
+
+//int Something::m_value = 1;
+
+```
+
+
+
+
+
+## 8.11 정적 멤버 함수
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Something
+{
+public:
+	static int s_value;
+
+public:
+	int getValue()
+	{
+		return s_value;
+	}
+};
+
+//int Something::m_value = 1;
+
+int main()
+{
+
+}
+```
+
+static int는 모든 인스턴스에서 같은 주소로 접근하게 된다.
+
+
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Something
+{
+public:
+	static int s_value;
+
+public:
+	int getValue()
+	{
+		return s_value;
+	}
+};
+
+//int Something::m_value = 1;
+
+int main()
+{
+	cout << Something::s_value << endl; // 인스턴스가 없어서 쓸 수 없다.
+
+	Something s1;
+	cout << s1.getValue() << endl;
+	cout << s1.s_value << endl;
+
+	return 0;
+}
+```
+
+
+
+인스턴스가 없을 때 직접 접근은 못하게 되지만, 간접적으로 함수를 통해 접근 가능
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Something
+{
+public:
+	static int s_value;
+
+public:
+	static int getValue()
+	{
+		return s_value;
+	}
+};
+
+int Something::s_value = 1024;
+
+int main()
+{
+	//cout << Something::s_value << endl; // 인스턴스가 없어서 쓸 수 없다.
+
+	cout << Something::getValue << endl;
+
+	Something s1;
+	cout << s1.getValue() << endl;
+	//cout << s1.s_value << endl;
+
+	return 0;
+}
+```
+
+
+
+### this
+
+this는 특정 인스턴스의 주소로 가서 받아오는 게 된다.
+
+```cpp
+
+	int temp()
+	{
+		return this->s_value;
+	}
+```
+
+
+
+ 하지만 **static 함수에서는 this를 쓸 수 없다.**
+
+```cpp
+class Something
+{
+public:
+	static int s_value;
+	int m_value;
+
+public:
+	static int getValue()
+	{
+		//return m_value;
+		//return this->s_value;
+		return s_value;
+	}
+```
+
+unstatic하게 접근하는 모든 방법이 안된다. m_value도 인스턴스마다 다르기 때문.
+
+
+
+### 함수 포인터
+
+```cpp
+	int (Something:: * fptr1)() = s1.temp;
+```
+
+함수는 모든 인스턴스들이 특정한 주소의 함수를 공유한다.
+
+그래서 위처럼 쓰면 에러가 난다.
+
+
+
+어떻게 해야 하나,
+
+```cpp
+	//int (Something:: * fptr1)() = s1.temp;
+	int (Something::*fptr1) () = &Something::temp;
+
+	cout << (s2.*fptr1)() << endl;
+```
+
+클래스 자체로 접근해서 메소드를 가져와서 넣어줘야 한다.
+
+s2를 안 주면 작동이 안 된다. non-static 함수는 인스턴스에 종속. 인스턴스가 없으면 쓸 수 없음(this가 있지만 생략된 형태라고 보면 된다)
+
+
+
+그렇다면 스태틱 멤버 함수 포인터는?
+
+```cpp
+	//int (Something::*fptr2)() = &Something::getValue;
+	int (*fptr2)() = &Something::getValue;
+	cout << fptr2() << endl;
+```
+
+특정한 인스턴스와 상관이 없게 해서 쓸 수 있다.  클래스를 써줄 필요가 없다.
+
+
+
+### 초기화
+
+```cpp
+public:
+	Something()
+		: m_value(123), s_value(1024) // 스태틱은 초기화 불가
+```
+
+c++은 스태틱 변수의 생성자는 지원하지 않는다. 
+
+
+
+그럼 어떻게 초기화할 것인가
+
+### inner class
+
+```cpp
+class Something
+{
+public:
+	class _init
+	{
+	public:
+		_init()
+		{
+			s_value = 1234;
+		}
+	};
+
+public:
+	static int s_value;
+	int m_value;
+
+	static _init s_initializer;
+    
+    
+    
+
+
+int Something::s_value = 1024;
+Something::_init Something::s_initializer;
+
+```
+
+클래스 정의 안에서는 스태틱 변수에 접근할 수 있으므로.
+
+이너 클래스가 생성되면서 s_value 값이 초기화
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
