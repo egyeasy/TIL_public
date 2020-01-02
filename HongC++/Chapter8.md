@@ -1790,15 +1790,199 @@ Something::_init Something::s_initializer;
 
 
 
+## 8.12 친구 함수와 클래스 friend
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class A
+{
+private:
+	int m_value = 1;
+
+	friend void doSomething(A& a); // 이 클래스의 친구로 선언
+};
+
+void doSomething(A& a)
+{
+	cout << a.m_value << endl; // 이렇게는 못 쓴다
+}
+
+
+int main()
+{
+	A a;
+	doSomething(a);
+
+	return 0;
+}
+```
+
+friend function은 클래스의 private member에도 접근할 수 있다.
 
 
 
 
 
+```cpp
+#include <iostream>
+using namespace std;
+
+class A
+{
+private:
+	int m_value = 1;
+
+	friend void doSomething(A& a, B& b); // 클래스 B의 정의가 A 아래에 있는 게 문제
+};
+
+class B
+{
+private:
+	int m_value = 2;
+
+	friend void doSomething(A& a, B& b); // 이 클래스의 친구로 선언
+};
+
+void doSomething(A& a, B& b)
+{
+	cout << a.m_value << " " << b.m_value << endl; // 이렇게는 못 쓴다
+}
+
+
+```
+
+A의 아래에 B 정의가 있어서 문제가 된다.
+
+
+
+### 전방 선언
+
+```cpp
+class B; // forward declaration
+
+class A
+{
+private:
+	int m_value = 1;
+
+	friend void doSomething(A& a, B& b); // 클래스 B의 정의가 A 아래에 있는 게 문제
+};
+
+class B
+{
+private:
+	int m_value = 2;
+
+	friend void doSomething(A& a, B& b); // 이 클래스의 친구로 선언
+};
+
+void doSomething(A& a, B& b)
+{
+	cout << a.m_value << " " << b.m_value << endl; // 이렇게는 못 쓴다
+}
+```
+
+디버깅이 불편하지만 복잡한 엔진 등에서는 안 쓸 수가 없다.
 
 
 
 
+
+### 메소드를 friend화 하기
+
+```cpp
+class B; // forward declaration
+
+class A
+{
+private:
+	int m_value = 1;
+
+	friend class B;
+};
+
+class B
+{
+private:
+	int m_value = 2;
+
+	void doSomething(A& a)
+	{
+		cout << a.m_value << endl;
+	}
+};
+```
+
+B가 A의 private 멤버에 접근할 수 있다.
+
+지금 상황에서는 class B 정의를 위로 올려도 A가 또 불리기 때문에 forward declaration을 피하기 힘들다.
+
+
+
+### 친구 member 함수
+
+멤버 함수만 friend로 가져오려면?
+
+```cpp
+class B; // forward declaration
+
+class A
+{
+private:
+	int m_value = 1;
+
+	// friend class B;
+	friend void B::doSomething(A& a);
+};
+
+class B
+{
+private:
+	int m_value = 2;
+
+	void doSomething(A& a)
+	{
+		cout << a.m_value << endl;
+	}
+};
+```
+
+문제는 B안에 doSomething이 있는지를 모른다는 것
+
+해결 방법은
+
+1. B 정의르 위로 올리고, A를 전방 선언. + doSomething의 정의를 분리
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class A; // forward declaration
+
+class B
+{
+private:
+	int m_value = 2;
+public:
+	void doSomething(A& a);
+};
+
+class A
+{
+private:
+	int m_value = 1;
+
+	// friend class B;
+	friend void B::doSomething(A& a);
+};
+
+void B::doSomething(A& a)
+{
+	cout << a.m_value << endl;
+}
+```
 
 
 
