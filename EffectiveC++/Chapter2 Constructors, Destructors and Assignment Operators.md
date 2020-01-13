@@ -20,7 +20,7 @@ copy assignment operator의 경우 결과적으로 code가 legal해야 컴파일
 
 
 
-# Item 6: Explicitly disallow the use of compiler generated functions you do not want.
+## Item 6: Explicitly disallow the use of compiler generated functions you do not want.
 
 copy constructor나 copy assignment operator를 선언하지 않으면 컴파일러가 알아서 그것들을 선언할 것이다. unique한 object만이 필요한 class에서는 이걸 방지하는 것이 좋다. -> base class에서 copy를 **private**으로 선언해라. 이로써 컴파일러가 자동 생성하거나 사용자가 복사를 하는 것을 막을 수 있다.
 
