@@ -106,7 +106,101 @@ base class interface를 통해 manipulate하는 경우에만 virtual dtor를 써
 
 
 
+## Item 9: construction 또는 destruction 중에는 절대로 가상 함수를 부르지 마라.
 
+- derived class를 생성할 때 based class의 생성자가 먼저 불리고, 이를 통해 based class의 멤버들만 construct 한다.
+
+- 이 때 virtual function을 통해 derived class의 member에 접근하는 일이 생기면 이건 불가능한 상황이다.
+- base construction 중에는 type도 base class다.
+
+
+
+### pure-virtual의 경우
+
+정의 되지 않았으므로 link가 되지 않는다. 
+
+
+
+### 생성자 내에 private 함수 내에 pure virtual 함수를 포함한 경우
+
+link, compile 단계는 ok.
+
+실행하면서 에러가 발생.
+
+그냥 virtual이었으면 base version의 virtual 함수가 실행됐을 것 -> 왜 이게 실행됐는지 혼돈에 빠지게 된다.
+
+
+
+### 해결 방법
+
+로그 찍는 함수(virtual로 만들었던 함수)를 public으로 만들고, derived class가 해당 함수를 쓸 때 인자로 logInfo를 전달하게 만든다.
+
+(private) static function으로 전달하면 uninit된 data member에 접근하지 않게 돼서 안전하다.
+
+
+
+### Things To Remember
+
+construction이나 destruction 동안 virtual function을 부르지 마라. 그런 콜은 현재 실행하는 ctor나 dtor보다 더 derived된 클래스로 들어가지 않는다.
+
+
+
+## Item 10: assignment operator가 *this에 대한 레퍼런스를 반환하게 해라
+
+강제되는 convention은 아니지만, 모든 built-in 타입과 STL에서는 assignment operator가 *this에 대한 레퍼런스를 반환한다.
+
+
+
+### Things To Remember
+
+- assignment operator가 *this에 대한 레퍼런스를 반환하게 하라.
+
+
+
+
+
+## Item 11: operator =에서 자기 자신에 대한 할당을 핸들해라.
+
+self에 대한 할당은 legal하다. 그러므로 이 경우를 염두에 둬라.
+
+쓰기도 전에 resource를 release하는 트랩에 빠질 수 있다.
+
+
+
+### 문제 상황
+
+서로 동일한 오브젝트 간에 할당을 하면
+
+멤버 포인터를 delete 해버린 상태에서 그 포인터를 할당해서 복사를 하는, 결과적으로 delete된 포인터 멤버를 가지고 있는 오브젝트를 복사하는 상황이 생길 수 있다.
+
+
+
+=> 함수 초기에 동일성 테스트를 하는 방법이 있다.
+
+
+
+### Exception-unsafe 요소
+
+하지만 이 방법도 메모리가 부족하거나, 생성자에서 exception이 발생하는 등으로 인해 멤버 포인터가 delete된 채로 유지되는 상황이 발생할 수 있다.
+
+
+
+=> 1) 로직의 순서를 바꿈으로써 self-assignment-safe와 exception-safe를 동시에 달성할 수 있다.
+
+멤버 포인터를 복사한 다음, 새로운 주소를 할당 받고, 복사한 주소를 delete하는 것.
+
+
+
+=> 2) 다른 대안 : **Copy and Swap**
+
+클래스 자체를 복사해서 swap하는 방식. 주로 exception safety를 확보하기 위해 쓰는 방법인데, 할당 연산자 정의에도 쓰일 수 있다. by reference 방식과 by value 방식이 있다.
+
+
+
+### Things To Remember
+
+- = 연산자가 자기 자신에게 할당할 때 잘 작동하도록 만들어라. 테크닉에는 source와 target 오브젝트의 주소 비교하기, 주의깊게 문장의 순서를 짜기, copy-and-swap이 있다.
+- 두 개 이상의 object를 가지고 작동하는 함수의 경우 object가 서로 같을 경우에도 잘 작동하도록 해라.
 
 
 

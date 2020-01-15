@@ -1988,6 +1988,249 @@ void B::doSomething(A& a)
 
 
 
+## 8.13 익명 객체
+
+한번만 쓰고 안 쓸 멤버 함수
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+class A {
+public:
+	void print()
+	{
+		cout << "Hello" << endl;
+	}
+};
+
+int main()
+{
+
+	A().print();
+
+	return 0;
+}
+```
+
+특징: A()가 L value가 아니라 R value처럼 작동(할당 대상이 아니라는 것 같다) -> 생기자마자 쓰이고 나서 사라지게(dtor 불림) 된다.
+
+여러번 쓰면 다른 객체가 생성될 것.
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+class A {
+public:
+	A()
+	{
+		cout << "constructor" << endl;
+	}
+
+	~A()
+	{
+		cout << "destructor" << endl;
+	}
+	void print()
+	{
+		cout << "Hello" << endl;
+	}
+};
+
+int main()
+{
+
+	A().print();
+	A().print();
+
+	return 0;
+}
+```
+
+이러면 constructor, dtor가 여러번 불리게 된다.
+
+
+
+다음 예제
+
+```cpp
+Cents add(const Cents& c1, const Cents& c2) {
+	return Cents(c1.getCents() + c2.getCents());
+}
+
+int main()
+{
+
+	A().print();
+	A().print();
+
+	cout << add(Cents(6), Cents(8)).getCents() << endl;
+
+	return 0;
+}
+```
+
+다음과의 유사성을 생각해보자
+
+```cpp
+	cout << int(6) + int(8) << endl;
+```
+
+캐스팅으로 배웠는데, 다음에 연산자 오버로딩에서 보게 될 것.
+
+
+
+
+
+## 8.14 클래스 안에 포함된 자료형 Nested types
+
+클래스 안에만 어떤 자료형을 선언할 수 있다.
+
+일반적으로 쓰면
+
+```cpp
+#include <iostream>
+
+enum FruitType
+{
+	APPLE, BANANA, CHERRY,
+};
+
+class Fruit
+{
+private:
+	FruitType m_type;
+
+public:
+	Fruit(FruitType type) : m_type(type)
+	{}
+
+	FruitType getType() { return m_type; }
+};
+
+int main() {
+
+```
+
+
+
+타입을 클래스에서만 쓴다면 클래스 안으로 정의를 넣을 수 있다.
+
+```cpp
+#include <iostream>
+
+
+class Fruit
+{
+public:
+	enum FruitType
+	{
+		APPLE, BANANA, CHERRY,
+	};
+
+private:
+	FruitType m_type;
+
+public:
+	Fruit(FruitType type) : m_type(type)
+	{}
+
+	FruitType getType() { return m_type; }
+};
+
+int main() {
+	Fruit apple(Fruit::FruitType::APPLE);
+}
+```
+
+enum class도 쓸 수 있다.
+
+inner class, struct도 가능하다.
+
+
+
+
+
+## 8.15 실행 시간 측정하기
+
+`chrono`가 시간을 재주는 라이브러리.
+
+로직은 다음과 같다:
+
+1. 벡터 안의 숫자를 초기화
+2. 벡터의 순서를 랜덤으로 뒤바꾼다.
+3. sort를 수행하고
+4. timer가 elapsed()를 통해 지난 시간을 체크한다.
+
+
+
+### Timer 클래스
+
+클래스로 한번 만들어놓자. start time을 timer가 만들어지는 순간의 현재 시간으로 설정.
+
+elapsed 함수는 불리는 시점의 현재 시간을 end time으로 설정. end time으로부터 start time을 빼서 카운트하면 초 단위로 걸린 시간을 출력할 수 있다.
+
+
+
+### debug & release
+
+디버그 모드에서보다 릴리즈 모드에서 7-8배 빠르게 나온다. 따라서 실제 시간을 재고 싶으면 릴리즈 모드에서 재야 한다.
+
+
+
+### 정밀도
+
+우리가 작성하는 프로그램은 여러 프로그램 중 하나일 뿐이다. 여기서 뜨는 실행 시간은 많은 요소들에 의해 달라짐. 최적화가 어렵다는 게 그런 이유임. 많은 지식이 필요하다. 시간을 재는 것을 신봉할 필요는 없다.
+
+그러므로 시간을 적어도 3번은 재봐야 한다. 안티 바이러스, 멀티스레딩, 음악 재생 여부에 따라 다르게 나올 수 있다.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
