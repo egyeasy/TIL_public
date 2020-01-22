@@ -369,6 +369,259 @@ int main()
 
 
 
+## 9.3 단항 연산자 오버로딩 하기
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Cents
+{
+private:
+	int m_cents;
+
+public:
+	Cents(int cents = 0) { m_cents = cents; }
+	int getCents() const { return m_cents; }
+	int& getCents() { return m_cents; }
+
+	// 단항 연산자
+	Cents operator - () const
+	{
+		return Cents(-m_cents);
+	}
+
+	friend std::ostream& operator << (std::ostream& out, const Cents& cents)
+	{
+		out << cents.m_cents;
+		return out;
+	}
+};
+
+int main()
+{
+	Cents cents1(6);
+	Cents cents2(0);
+
+	int a = 3;
+
+	// 단항 연산자
+	cout << -a << endl;
+	cout << !a << endl;
+
+	cout << cents1 << endl;
+	cout << -cents1 << endl;
+	cout << -Cents(-10) << endl;
+
+	return 0;
+}
+
+```
+
+
+
+### Not operator !
+
+```cpp
+	bool operator ! () const
+	{
+		// !Cents(...)
+		return (m_cents == 0) ? true : false;
+	}
+
+int main()
+{
+	Cents cents1(6);
+	Cents cents2(0);
+
+	// not operator
+	cout << endl;
+	auto temp = !cents1; // temp는 bool type
+
+	cout << !cents1 << " " << !cents2 << endl;
+
+	return 0;
+}
+
+```
+
+
+
+
+
+## 9.4 비교 연산자 오버로딩 하기
+
+std sort를 사용하려면 크기 비교 연산자가 구현돼 있어야 함.
+
+if 문 안에서 쓰려고 해도 필요
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Cents
+{
+private:
+	int m_cents;
+
+public:
+	Cents(int cents = 0) { m_cents = cents; }
+	int getCents() const { return m_cents; }
+	int& getCents() { return m_cents; }
+
+	friend bool operator == (const Cents& c1, const Cents& c2)
+	{
+		return c1.m_cents == c2.m_cents;
+	}
+
+	friend std::ostream& operator << (std::ostream& out, const Cents& cents)
+	{
+		out << cents.m_cents;
+		return out;
+	}
+};
+
+int main()
+{
+	int a = 3, b = 3;
+	if (a == b)
+		cout << "Equal " << endl;
+
+	Cents cents1(6);
+	Cents cents2(6);
+
+	if (cents1 == cents2)
+		cout << "Equal " << endl;
+
+	cout << std::boolalpha;
+}
+```
+
+
+
+### sorting
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+
+	vector<Cents> arr(20);
+	for (unsigned i = 0; i < 20; ++i)
+		arr[i].getCents() = i;
+
+	std::random_shuffle(begin(arr), end(arr));
+
+	for (auto& e : arr)
+		cout << e << " ";
+	cout << endl;
+
+	std::sort(begin(arr), end(arr));
+
+	for (auto& e : arr)
+		cout << e << " ";
+	cout << endl;
+
+```
+
+숫자 뒤섞은 다음 sort해서 보여주기
+
+이를 위해 크기 비교 연산자를 오버로딩 해줘야 함
+
+
+
+**왼쪽이 더 작은지를 비교하는 연산자 (<)를 정의해야 함**
+
+```cpp
+	friend bool operator < (const Cents& c1, const Cents& c2)
+	{
+		return c1.m_cents < c2.m_cents;
+	}
+```
+
+
+
+
+
+## 9.5 증감 연산자 오버로딩 하기
+
+++, --
+
+전위형이냐, 후위형이냐에 따라 성질이 다르다(앞에 오냐 뒤에 오냐)
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Digit
+{
+private:
+	int m_digit;
+
+public:
+	Digit(int cents = 0) { m_digit = cents; }
+	int getCents() const { return m_digit; }
+	int& getCents() { return m_digit; }
+
+	// prefix(전위형)
+	Digit& operator ++ ()
+	{
+		++m_digit;
+		
+		return *this; // 자기 자신(의 레퍼런스를 deref한 것) 리턴
+	}
+
+	// postfix(후위형)
+	Digit operator ++ (int) // Dummy를 넣어서 postfix를 정의한다
+	{
+		Digit temp(m_digit);
+
+		++(*this); // 또는 ++m_digit. 위의 오버로딩 함수를 사용.
+		return temp;
+	}
+
+	friend std::ostream& operator << (std::ostream& out, const Digit& d)
+	{
+		out << d.m_digit;
+		return out;
+	}
+};
+
+int main()
+{
+	Digit d(5);
+
+	cout << ++d << endl;
+	cout << d << endl;
+
+	cout << d++ << endl;
+	cout << d << endl;
+
+	return 0;
+
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
