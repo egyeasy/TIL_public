@@ -20,10 +20,9 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{769E2196-016C-4ACE-B445-104DA73CB171}</ProjectGuid>
-    <RootNamespace>Chapter93단항연산자오버로딩하기</RootNamespace>
+    <ProjectGuid>{D822283A-6A8B-4E25-A61C-7400C9A2FCB1}</ProjectGuid>
+    <RootNamespace>Chapter908형변환을오버로딩하기</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>Chapter9_03 단항 연산자 오버로딩 하기</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -124,7 +123,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="9_3.cpp" />
+    <ClCompile Include="9_8.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

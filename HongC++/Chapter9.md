@@ -608,11 +608,314 @@ int main()
 
 
 
+## 9.6 첨자 연산자 오버로딩 하기
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class IntList
+{
+private:
+	int m_list[10];
+
+public:
+	void setItem(int index, int value)
+	{
+		m_list[index] = value;
+	}
+
+	int getItem(int index)
+	{
+		return m_list[index];
+	}
+};
+
+int main()
+{
+	IntList my_list;
+	my_list.setItem(3, 1);
+	cout << my_list.getItem(3) << endl;
+}
+```
+
+
+
+리스트를 반환하는 것도 가능하다
+
+```cpp
+	int* getList()
+	{
+		return m_list;
+	}
+
+
+	my_list.getList()[3] = 10;
+	cout << my_list.getList()[3] << endl;
+```
+
+
+
+### 첨자 연산자 오버로딩
+
+```cpp
+	int& operator [] (const int index)
+	{
+		return m_list[index];
+	}
+
+
+	my_list[3] = 10;
+	cout << my_list[3] << endl;
+```
+
+
+
+### const IntList의 경우에는?
+
+```cpp
+	const int& operator [] (const int index) const
+	{
+		return m_list[index];
+	}
+```
+
+
+
+### assert로 index 잘못 들어오는 것 막기
+
+연산자는 많이 사용하기 때문에 if문보다는 assert를 쓰는 것이 빠르게 쓰기에 좋다.
+
+```cpp
+	int& operator [] (const int index)
+	{
+		assert(index >= 0);
+		assert(index < 10);
+
+		return m_list[index];
+	}
+```
+
+
+
+### 참고
+
+```cpp
+	IntList* list = new IntList;
+	// list[3] 이렇게 하면 안됨
+	(*list)[3] = 10; // OK (dereference)
+```
 
 
 
 
 
+##  9.7 괄호 연산자 오버로딩과 함수 객체
+
+함수가 객체인 것처럼 사용할 수 있다.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Accumulator
+{
+private:
+	int m_counter = 0;
+
+public:
+	int operator()(int i) { return (m_counter += i); }
+};
+
+int main()
+{
+	Accumulator acc;
+	cout << acc(10) << endl; // 현재 있는 값에 10을 더함
+	cout << acc(20) << endl; // 10 + 20
+
+	return 0;
+}
+```
+
+
+
+
+
+## 9.8 형변환을 오버로딩 하기
+
+type cast를 오버로딩
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Cents
+{
+private:
+	int m_cents;
+
+public:
+	Cents(int cents = 0) { m_cents = cents; }
+	int getCents() const { return m_cents; }
+	void setCents(int cents) {
+		m_cents = cents;
+	}
+
+	operator int()
+	{
+		cout << "cast here" << endl;
+		return m_cents;
+	}
+
+};
+
+void printInt(const int& value)
+{
+	cout << value << endl;
+}
+
+int main()
+{
+	Cents cents(7);
+
+	printInt(cents);
+
+	return 0;
+}
+```
+
+
+
+```cpp
+	int value = (int)cents;
+	value = int(cents);
+	value = static_cast<int>(cents);
+```
+
+다 같은 것이다.
+
+
+
+### 달러를 센트로 변환
+
+```cpp
+class Dollar
+{
+private:
+	int m_dollars = 0;
+
+public:
+	Dollar(const int& input) : m_dollars(input) {}
+
+	operator Cents()
+	{
+		return Cents(m_dollars * 100);
+	}
+};
+
+
+	Dollar dol(2);
+	Cents cents2 = dol;
+	printInt(cents2);
+```
+
+
+
+
+
+## 9.9 복사 생성자, 복사 초기화 반환값 최적화
+
+```cpp
+#include <iostream>
+#include <cassert>
+using namespace std;
+
+class Fraction
+{
+private:
+	int m_numerator;
+	int m_denominator;
+
+public:
+	Fraction(int num = 0, int den = 1)
+		: m_numerator(num), m_denominator(den)
+	{
+		assert(den != 0);
+	}
+
+	Fraction(const Fraction& fraction) // copy constructor
+		: m_numerator(fraction.m_numerator), m_denominator(fraction.m_denominator)
+	{
+		cout << "Copy constructor called" << endl;
+	}
+
+	friend std::ostream& operator << (std::ostream& out, const Fraction& f)
+	{
+		out << f.m_numerator << " / " << f.m_denominator << endl;
+
+		return out;
+	}
+};
+
+int main()
+{
+	Fraction frac(3, 5);
+
+	Fraction fr_copy(frac); // 복사
+
+	cout << frac << fr_copy << endl;
+
+	return 0;
+}
+```
+
+결과가 똑같이 나오는 것을 볼 수 있다.
+
+
+
+### copy initialization
+
+```cpp
+	Fraction fr_copy = frac; // copy initialization
+```
+
+이 경우에도 위와 같음
+
+
+
+### 복사를 막고 싶다면
+
+copy constructor를 private으로 옮기면 된다.
+
+
+
+### 이 경우에는?
+
+```cpp
+	Fraction fr_copy(Fraction(3, 10));
+```
+
+컴파일러가 알아서 Fraction부분을 생략하고 3, 10만 넣는다.
+
+
+
+### 함수로 받기
+
+```cpp
+Fraction doSomething()
+{
+	Fraction temp(1, 2);
+
+	return temp;
+}
+
+	Fraction result = doSomething();
+	cout << result << endl;
+```
+
+디버그 모드에서는 카피 컨스트럭터가 쓰임(copy initialization - 두 개가 서로 다른 주소. 복사를 해서 씀)
+
+릴리즈 모드에서는 안쓰이고 오브젝트를 그냥 그대로 받아서 씀(**반환값 최적화** - 같은 주소의 객체를 넘겨받음)
 
 
 

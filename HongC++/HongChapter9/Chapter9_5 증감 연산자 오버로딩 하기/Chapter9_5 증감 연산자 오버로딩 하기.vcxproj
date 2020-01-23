@@ -23,6 +23,7 @@
     <ProjectGuid>{AD05A7F4-38FF-4C8E-AAFA-AE993BB5F93C}</ProjectGuid>
     <RootNamespace>Chapter95증감연산자오버로딩하기</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>Chapter9_05 증감 연산자 오버로딩 하기</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
