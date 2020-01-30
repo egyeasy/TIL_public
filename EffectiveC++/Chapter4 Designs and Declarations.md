@@ -152,3 +152,125 @@ static array나 vector를 활용하는 방법도 size를 설정해야 하는 문
 ### Things to Remember
 
 local stack object에 대한 포인터나 ref를 리턴하지 마라. heap-allocated object에 대한 ref, local static object에 대한 포인터나 ref도 리턴하지 마라(하나보다 많은 오브젝트가 필요하게 될 가능성이 있다면) (Item 4는 최소한 싱글 스레드 환경에서는 local static에 대한 ref를 리턴하는 것이 합리적이라는 예제 디자인을 보여준다.)
+
+
+
+
+
+## Item 22: Declare data members private.
+
+data member를 private으로 선언하면, **syntactic constistency**를 확보할 수 있다. get/set 메소드를 통해 접근성에 대한 정확한 컨트롤이 가능하다.
+
+내부 구현을 바꾸면 사용자는 리컴파일하기만 하면 된다. -> implementation flexibility
+
+
+
+### encapsulation
+
+1. 불변 속성(class invariants)이 유지된다.
+2. 구현을 바꿀 수 있다.(changeable)
+
+
+
+### protected
+
+protected에 data member를 넣는 것도 public과 유사하다. 결국은 derived class의 코드가 broken 될 것이다.
+
+
+
+### Things to Remember
+
+- data member를 private으로 선언하라. 이는 클라이언트에게 syntactically uniform access to data를 제공하고 미세한 access control이 가능하게 하고, invariant가 강제되게 하고, 클래스 작성자가 구현에 유연성을 갖게 할 수 있다.
+- protected도 public과 유사한 정도로 encapsulated된다.
+
+
+
+
+
+## Item 23: non-member non-friend 함수를 member 함수보다 선호하라.
+
+member function에 비해 non-member func은 encapsulate를 더 할 수 있다. 컴파일 dependency가 낮아지고 확장성이 높아진다. -> 더 changeable 하다.
+
+이는
+
+1. non-friend에게만 해당
+2. 다른 클래스의 멤버여도 된다.
+
+
+
+### convenience function
+
+또한 단순히  convenience func이기 때문에 사용자가 필요하지 않다면 직접 멤버 함수를 호출해도 된다.
+
+conv func 내의 영역을 분리할 수도 있다 -> 모든 func를 컴파일하지 않아도 되는 것. 필요한 것만 갖다 쓸 수 있다.
+
+헤더 파일만 만들어서 네임스페이스 선언하고 정의하면 되므로 확장이 쉬움.
+
+이와 반대로 클래스는 쪼갤 수가 없기 때문에 이를 영역별 split이 불가능.
+
+
+
+### Things to Remember
+
+- non-member non-friend func를 member func보다 선호하라. 이는 encapsulation, packaging flexibility, fucntional extensibility를 향상시킨다.
+
+
+
+
+
+## Item 24: Declare non-member functions when type conversions should apply to all parameters.
+
+가급적 클래스가 implicit conversion을 지원하지 않도록 하는 것이 좋다고 introduction에서 얘기했다. 하지만 numerical type에 대해서는 필요한 경우가 있다.
+
+
+
+유리수 클래스를 정의하고, 이를 2와 곱셈 연산이 가능하게 하고 싶다면?
+
+교환 법칙이 성립해야 하는데 클래스 멤버 함수(with non-explicit ctor)로 연산자를 정의하면 한쪽에서 컴파일 에러가 나게 된다.(explicit ctor에서는 둘 다 에러남) 이는 함수 parameter로 들어갈 경우에만 implicit type conversion이 이뤄지기 때문이다.
+
+
+
+=> non-member 함수로 선언해서 여러 type을 parameter로 넣으면서 implicit type conversion이 가능하게 하라.
+
+```cpp
+const Rational operator*(const Rational& lhs, const Rational& rhs)
+{
+    return Rational(lhs.numerator() * rhs.numerator(),
+                   	lhs.denominator() * rhs.denominator());
+}
+```
+
+
+
+non-member함수가 friend일 필요는 없다.
+
+
+
+### Things to Remember
+
+- 함수의 모든 parameter에 대해 type conversion이 필요하다면 그 함수는 non-member여야 한다.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
