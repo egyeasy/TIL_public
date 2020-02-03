@@ -921,6 +921,217 @@ Fraction doSomething()
 
 
 
+## 9.10 변환 생성자, explicit, delete
+
+메모리 할당 해제할 때의 delete와는 다른 것.
+
+
+
+### 변환 생성자(converting constructor)
+
+함수에 인자로 대충 넣어도 클래스를 만들어서 전달해주는 것
+
+```cpp
+void doSomething(Fraction frac) {
+    
+}
+
+int main()
+{
+    doSomething(7);
+}
+```
+
+생성자에 모든 인자를 전달하지 않았다면 기본값을 사용해서 만들어준다.
+
+
+
+### explicit
+
+생성자에 explicit 선언하면 위의 방법이 막히게 된다. 
+
+```cpp
+explicit Fraction(int num = 0, int den = 1)
+
+doSomething(frac);
+```
+
+
+
+### delete
+
+버전업을 해서 못쓰게 만들고 싶을 때 강력하게 막아놓으려고 쓴다.
+
+```cpp
+public:
+Fraction(char) = delete;
+
+Fraction frac2('c'); // error
+```
+
+
+
+
+
+## 9.11 대입 연산자 오버로딩, 깊은 복사, 얕은 복사
+
+
+
+### 얕은 복사
+
+```cpp
+MySTring hello("Hello");
+
+cout << (int*)hello.m_data << endl;
+cout << hello.getString() << endl;
+
+{
+    MyString copy = hello; // 복사 생성자 호출
+    cout << (int*)copy.m_data << endl;
+    cout << copy.getString() << endl;
+} // scope가 끝나면 복사된 객체는 사라진다.
+```
+
+지금은 복사 생성자를 정의하지 않았기 때문에 디폴트 복사 생성자가 쓰인다.
+
+멤버를 그냥 복사해서 준다.
+
+
+
+그 다음 main에서 string을 부르면
+
+```cpp
+cout << hello.getString() << endl;
+```
+
+이미 copy가 지워지면서 m_data 포인터를 delete해버림 -> hello의 m_data까지 delete 되어 버린다.
+
+이상한 값이 나와버리게 된다.
+
+
+
+### copy constructor - 깊은 복사를 구현해보자
+
+```cpp
+MyString(const MyString &source)
+{
+    cout << "Copy Constructor " << endl;
+    
+    m_length = source.m_length;
+    
+    if (source.m_data != nullptr)
+    {
+        m_data = new char[m_length];
+        
+        for (int i = 0; i < m_length; ++i)
+            m_data[i] = source.m_data[i];
+    }
+    else
+        m_data = nullptr;
+}
+```
+
+
+
+### 대입 연산자
+
+```cpp
+MyString& operator = (const MyString &source)
+{
+    // shallow copy
+    //this->m_data = source.m_data;
+    //this->m_length = source.m_length;
+    
+    // 주소 비교해서 같다면 끝내버림
+    if (this == &source) // 자기가 자기 자신에게 할당하는 경우(hello = hello)
+        return *this;
+    
+    delete[] m_data; // 갖고 있던 것을 지워버림(할당이기 때문에 이전에 멤버가 있었을 것)
+    
+    m_length = source.m_length;
+    
+    if (source.m_data != nullptr)
+    {
+        m_data = new char[m_length];
+        
+        for (int i = 0; i < m_length; ++i)
+            m_data[i] = source.m_data[i];
+    }
+    else
+        m_data = nullptr;
+    
+   	return *this;
+}
+```
+
+
+
+### 복사 생성자 사용
+
+```cpp
+MyString hello("Hello");
+
+{
+    MyString copy = hello;
+}
+```
+
+
+
+### 대입 연산자 사용
+
+```cpp
+MyString str1 = hello; // 복사 생성자 호출(방법 1)
+MyString str1(hello); // 복사 생성자 호출(방법 2) - 이게 더 구분이 되므로 추천
+
+MyString str2;
+str2 = hello; // 대입 연산자 호출
+```
+
+
+
+### 복사 생성자 구현하지는 않고 얕은 복사를 막는 법
+
+직접 구현하기 귀찮다면
+
+아예 얕은 복사를 막아버리는 delete를 쓸 수 있다.
+
+```cpp
+MyString(const MyString &source) = delete;
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
