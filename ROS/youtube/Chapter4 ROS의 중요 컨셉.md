@@ -192,3 +192,46 @@ ROS Master 기능의 일부.
 
 ## 이기종 디바이스 간의 통신
 
+### 원격으로 이미지 전송
+
+다른 디바이스의 카메라 정보를 받아와보자.
+
+터미널에서 `eb`를 쳐서 맨 아래로 가보자(강사님이 설정해놓은 명령어)
+
+export ROS_MASTER_URI=http://192.168.0.61:11311 등으로 다른 사람의 ip를 써주기(master를 다른 사람으로 설정)
+
+export ROS_HOSTNAME=192.168.10.87 등으로 자기 ip 써주기
+
+
+
+source ~/.bashrc 후에
+
+`rqt_image_view`
+
+
+
+master가 turtlebot 창을 켜고
+
+이기종에서 turtlebot key 입력 node를 켜면 조종할 수 있게 된다.
+
+같은 네트워크 내에서 같은 이름의 node를 실행하면 기존 node가 죽음 -> 기존에 조종하고 있던 사람이 못 조종하게 됨
+
+
+
+### 안드로이드 스마트폰의 가속도 값을 PC에서 확인하기(App 링크 참고)
+
+휴대폰에서 앱을 실행하고, 그 값을 PC에서 확인
+
+rqt 실행 -> plot -> /imu/linear_acceleration을 선택
+
+스마트폰의 움직임을 plot으로 볼 수 있다(각 축의 가속도 값)
+
+
+
+### 안드로이드 스마트폰으로 TurtleBot 제어하기(App 링크 참고 - ROS Control)
+
+PC에서 turtlesim을 띄워놓는다. 이걸 스마트폰에서 조종할 수 있다.(linux - android 간 통신이 되는 것)
+
+
+
+terminator라는 터미널 추천 -> 다중 창, 다중 명령 가능, GUI를 통한 스플릿 가능
