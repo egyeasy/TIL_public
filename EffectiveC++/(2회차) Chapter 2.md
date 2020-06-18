@@ -166,13 +166,25 @@ container의 DBConn들을 destroy할 때 하나의 DBConn의 close()에서 excep
 
 ## Item 9: contruction이나 destruction 중에 virtual 함수를 부르지 마라.
 
-base class의 constructor 안에서 virtual 함수를 부르면 base class의 virtual 함수가 불리게 된다. 그것은 derived 안으로 들어가지 않는다. base class constructor가 불리는 상황에서는 derived constructor가 불리지 않았고 초기화도 되지 않는 상황이기 때문이다. C++에서는 이 상황에서 derived로의 접근을 막아놓았다.
+### base constructor에서 virtual 함수를 부를 경우
+
+base class의 constructor 안에서 virtual 함수를 부르면 base class의 virtual 함수가 불리게 된다.
+
+이 virtual 함수는 derived class에서 구현된 virtual 함수를 부르지 않게 된다. base class constructor가 불리는 상황에서는 derived constructor가 불리지 않았고, 따라서 derived class가 초기화도 되지 않는 상황이기 때문이다. C++에서는 이 상황에서 derived로의 접근을 막아놓았다.
+
+
+
+### construct 도중 class의 type
 
 또한 base class의 constructor가 불리는 중에는 해당 class의 타입이 base class로 나온다. 이는 destructor에서도 마찬가지로, class의 타입은 derived -> base로 바뀐다.
 
-pure virtual 함수가 init() 안에 있게 된다면 이것은 linking error를 발생시킬 것이지만, 그냥 virtual 함수일 경우 정상적으로 컴파일 및 링킹될 것이고, 이것은 문제가 된다.
 
-이것은 base class에서 virtual 함수를 쓰지 않고, derived class에서 파라미터를 던져줘서 다르게 취급하도록 만드는 방안으로 해결할 수 있다.
+
+### base constructor 내의 pure virtual vs normal virtual
+
+base class의 constructor 내에서 init() 함수를 실행하고, pure virtual 함수가 init() 안에 있게 된다면 이것은 linking error를 발생시킬 것이지만, 그냥 virtual 함수일 경우 정상적으로 컴파일 및 링킹될 것이고, 이것은 문제가 된다.
+
+이것은 base class에서 virtual 함수를 쓰지 않고, derived class에서 파라미터를 던져줘서 derived class 별로 logInfo를 다르게 넘겨주도록 만드는 방안으로 해결할 수 있다.
 
 ```cpp
 class Transaction {
@@ -198,7 +210,7 @@ class BuyTransaction: public Transaction {
 };
 ```
 
-**함수를 static으로 선언함으로써 초기의 BuyTransaction 오브젝트의 초기화되지 않은 데이터 멤버를 참조할 위험이 없어진다.**
+**참고로, 함수를 static으로 선언함으로써 초기의 BuyTransaction 오브젝트의 초기화되지 않은 데이터 멤버를 참조할 위험이 없어진다.**
 
 
 
@@ -312,25 +324,68 @@ Widget& Widget::operator=(Widget rhs)
 
 
 
+## Item 12: 객체의 모든 파트를 복사해라.
+
+정상적으로 디자인된 객체지향 시스템에서 객체를 복사하는 함수에는 복사 함수 (copy constructor, copy assignment operator)만 있다.
+
+Item 5에서 컴파일러가 필요로 한다면(호출이 된다면) 복사 함수를 알아서 생성하는데, 컴파일러 생성 버전에서는 객체의 모든 데이터를 복사한다.
+
+하지만 사용자가 정의한 복사 함수를 사용하면 컴파일러가 사용자에게 잘못된 것을 알려주지 않는다.
 
 
 
+### Customer 예제
+
+특정 멤버 변수를 추가했을 때 복사 함수에서 이 멤버를 복사하지 않아도, 컴파일러에서는 경고를 해주지 않는다.
+
+따라서 복사 함수, constructor, = 연산자를 정의할 때 모든 데이터 멤버가 적용되도록 업데이트해줘야 한다.
 
 
 
+### Customer 상속 예제
+
+상속을 받게 되는 상황에서 문제는 더 안드러나게 된다. PriorityCustomer가 Customer를 상속받고, 복사 생성자를 정의하면 Customer 부분을 복사해올 수 있는 방법이 없다. 그래서 아무 처리를 해주지 않으면 Customer의 부분은 Customer의 default contstructor로 만들어진다.
+
+ copy assignment operator을 통해 자신의 멤버를 복사하게 되면 Customer에서 선언한 데이터 멤버들이 복사되지 않게 된다. 따라서 Customer의 부분은 바뀌지 않은 채로 남아있게 된다.
+
+-> 복사 생성자든 복사 할당 연산자든 base  class의 copy assignment operator를 불러주어야 한다.
+
+```c++
+PriorityCustomer::PriorityCustomer(const PriorityCustomer& rhs)
+  : Customer(rhs),	// Customer part
+	priority(rhs.priority)
+{
+        logCall("");
+}
+
+PriorityCustomer&
+PriorityCustomer::operator=(const PriorityCustomer& rhs)
+{
+    logCall("");
+    
+    Customer::operator=(rhs);	// Customer part
+    
+    priority = rhs.priority;
+    return *this;
+}
+```
+
+따라서 "모든 파트를 복사하는 것"의 의미는
+
+1. 모든 로컬 데이터 멤버를 복사
+2. 모든 base class의 적절한 복사 함수를 호출
+
+하는 것이다.
 
 
 
+### 코드 중복 방지의 문제
 
+copy constructor와 copy assignment operator의 코드가 비슷해서 한쪽에서 다른 쪽을 부르고 싶게 될 수가 있다. 하지만 이것은 문법적으로 지원되지 않으며, backwards 단에서 그렇게 되게 만드는 방법도 있으나 특정 조건에서 객체가 corrupt 될 수 있으므로 권장하지 않는다.
 
+copy constructor는 새로운 객체를 초기화하는 것이고, copy assignment operator는 초기화된 객체에 적용되는 것이다. 따라서 한쪽에서 다른 쪽을 부르는 게 말이 안 된다.
 
-
-
-
-
-
-
-
+중복을 방지하고 싶다면 제 3의 함수를 써서 양쪽 모두에서 호출하게 해라. 이것은 주로 init으로 명명되고 private 함수로 선언된다.
 
 
 
