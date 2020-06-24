@@ -348,7 +348,7 @@ Item 5에서 컴파일러가 필요로 한다면(호출이 된다면) 복사 함
 
  copy assignment operator을 통해 자신의 멤버를 복사하게 되면 Customer에서 선언한 데이터 멤버들이 복사되지 않게 된다. 따라서 Customer의 부분은 바뀌지 않은 채로 남아있게 된다.
 
--> 복사 생성자든 복사 할당 연산자든 base  class의 copy assignment operator를 불러주어야 한다.
+-> 복사 생성자든 복사 할당 연산자든 base  class의 copy constructor, copy assignment operator를 불러주어야 한다.
 
 ```c++
 PriorityCustomer::PriorityCustomer(const PriorityCustomer& rhs)
