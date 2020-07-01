@@ -1,39 +1,41 @@
-# 1. 2분탐색
-# 2. sort하고 짧은거 기준으로 검색 하기
-
 from typing import List
 
 class Solution:
     def longestCommonPrefix(self, strs: List[str]) -> str:
+
         answer = ""
-        idx = 0
-        while True:
-            go_out = False
-            if not strs:
-                return answer
-            
+        if not strs:
+            return answer
+
+        min_word = -1
+        for word in strs:
+            if min_word == -1:
+                min_word = word
+            elif len(word) < len(min_word):
+                min_word = word
+
+        found = False
+        answer_idx = 0
+
+        for i in range(len(min_word) + 1):
             for word in strs:
-                if len(word) > 0:
-                    prefix_cand = strs[0][idx]
+                if not word.startswith(min_word[:i]):
+                    answer_idx = i - 1
+                    found = True
                     break
             else:
-                return answer
-            
-            for word in strs:
-                if len(word) < idx + 1 or word[idx] != prefix_cand:
-                    go_out = True
-                    break
-                
-            if go_out:
+                answer_idx = i
+            if found:
                 break
-            
-            answer += prefix_cand
-            idx += 1
-
+        answer = min_word[:answer_idx]
         return answer
+        
+
 
 if __name__ == '__main__':
     solution = Solution()
     print(solution.longestCommonPrefix(["flower","flow","flight"]))
     print(solution.longestCommonPrefix(["dog","racecar","car"]))
     print(solution.longestCommonPrefix([""]))
+    print(solution.longestCommonPrefix(["a"]))
+    print(solution.longestCommonPrefix(["aa", "aa"]))
