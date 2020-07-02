@@ -287,7 +287,7 @@ class Font {
 }
 ```
 
-위 함수는 특정 함수의 인자로 FontHandle을 받게 되어있는 상황에서 Font 타입의 변수를 전달했을 때, 이를 FontHandle로 바꿔주는 연산을 오버로딩 하는 것을 의미하는 듯하다.
+(위 함수는 특정 함수의 인자로 FontHandle을 받게 되어있는 상황에서 Font 타입의 변수를 전달했을 때, 이를 FontHandle로 바꿔주는 연산을 오버로딩 하는 것을 의미하는 듯하다.)
 
 
 
@@ -356,7 +356,7 @@ delete에 관한 큰 의문은 이것이다 -> delete는 몇 개의 destructor�
 
 
 
-### memory layouts in Single Object vs Array
+### Single Object vs Array in memory layout
 
 대부분의 컴파일러들에서, array의 메모리에는 객체들 뿐만 아니라 그 개수 또한 함께 저장되는 layout을 가지고 있다.
 
@@ -436,8 +436,6 @@ int priority();
 void processWidget(std::shared_ptr<Widget> pw, int priority);
 ```
 
-
-
 리소스 매니징 객체를 쓰는게 좋다는 생각에 processWidget에서는 shared_ptr을 쓰고 있다.
 
 processWidget을 호출하는 코드를 생각해보면:
@@ -446,7 +444,7 @@ processWidget을 호출하는 코드를 생각해보면:
 processWidget(new Widget, priority());
 ```
 
-하지만 이것은 컴파일되지 않는다. shared_ptr은 explicit 방식으로 raw pointer를 받고 있고, new Widget을 통해 리턴 된 포인터를 shared_ptr로 implicit conversion해주는 기능은 제공하지 않고 있기 때문이다.
+하지만 이것은 컴파일되지 않는다. shared_ptr은 explicit 방식으로만 raw pointer를 받고 있고, new Widget을 통해 리턴 된 포인터를 shared_ptr로 implicit conversion해주는 기능은 제공하지 않고 있기 때문이다.
 
 따라서 컴파일 되는 코드는 다음과 같다:
 
@@ -470,13 +468,13 @@ processWidget이 불리기 위해서는 컴파일러가 다음의 3가지 코드
 
 Java나 C#에서와는 다르게, C++ 컴파일러들은 이 우선순위를 정할 수 있는 재량을 가지고 있다.
 
-하지만 이 재량 때문에, 효율성 등의 이유로 만약 다음과 같은 순으로 코드가 실행된다면:
+하지만 이 재량 때문에, 효율성 등의 이유로 만약 다음과 같은 순으로 코드가 실행된다고 가정해보자:
 
 1. new Widget 실행
 2. priority 호출
 3. shared_ptr constructor 호출
 
-게다가 priority를 호출하다가 exception이 발생한다면, new Widget을 받아온 포인터를 잃어버리게 될 것이고, 포인터를 shared_ptr에 담을 수 없게 되어 리소스 leak을 방지할 수 없게 된다. 
+거기에 더해서 priority를 호출하다가 exception이 발생한다면, new Widget을 받아온 포인터를 잃어버리게 될 것이고, 포인터를 shared_ptr에 담을 수 없게 되어 리소스 leak을 방지할 수 없게 된다. 
 
 **이것은 리소스가 생성되는 시점과 리소스가 리소스 관리 객체에 전달되는 시점에 exception이 개입할 수 있는 데서 발생하는 문제다.**
 
@@ -492,7 +490,7 @@ std::shared_ptr<Widget> pw(new Widget);
 processWidget(pw, priority());
 ```
 
-이것은 컴파일러가 연산의 순서를 재조정할 때  statement 안에서보다는 statement들 사이에서는 재량을 덜 가지기 때문에 통하는 방법이다.
+이것은 컴파일러가 연산의 순서를 재조정할 때  statement 안에서보다는 statement들 사이에서는 재량을 덜 가지기 때문에 통하는 방법이다.(= 컴파일러가 statement들 간의 순서를 변경하기는 어렵다)
 
 이 때문에 여기서는 priority가 new Widget과 shared_ptr constructor 사이로 끼어들 일이 없다.
 
@@ -561,34 +559,6 @@ processWidget(pw, priority());
   존재하는 클래스에 functionality를 추가하는 것이라면, non-member function과 template을 정의하는 것만으로도 가능하다.
 
 이 질문들은 답하기 어렵고, 그래서 효율적인 클래스 정의가 어렵다. 잘만 되면 그러한 노력은 투자할 가치가 있다.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
