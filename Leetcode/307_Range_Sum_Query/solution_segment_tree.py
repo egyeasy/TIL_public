@@ -32,7 +32,7 @@ class NumArray:
 
     def update(self, i: int, val: int) -> None:
         dif = val - self.nums[i]
-        nums[i] = val
+        self.nums[i] = val
         self.update_(0, len(self.nums) - 1, 1, i, dif)
         print("update: ", i, val, self.nums, self.tree)
 
