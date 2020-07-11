@@ -13,3 +13,4 @@ class Solution:
                 idx_5 += 1
             nums.append(min_value)
         return nums[n - 1]
+
