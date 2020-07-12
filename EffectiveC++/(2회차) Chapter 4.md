@@ -606,7 +606,152 @@ WebBrowser와 같은 클래스는 다양한 conv 함수를 가질 수 있다. �
 
 
 
+## Item 24: 모든 파라미터에 대해 type conversion이 적용되어야 할 때는 non-member 함수를 선언해라.
 
+도입부에서 클래스가 implicit 형 변환을 제공하도록 하는 게 나쁜 아이디어라고 말한 바 있다.
+
+하지만 그 예외가 있을 수 있는데, 가장 흔한 것은 numerical 타입을 만들 때다.
+
+rational number를 표현하는 클래스를 디자인할 때 integer를 rational로 암묵적 형 변환해주는 것을 허용하는 것은 비합리적이어 보이지 않는다.
+
+
+
+```c++
+class Rational {
+  public:
+    Rational(int numerator = 0,			// explicit 생성자가 아님
+             int denominator = 1);]
+    
+    int numerator() const;
+    int denominator() const;
+  private:
+    ...
+};
+```
+
+
+
+### 연산을 무슨 함수로 짤까?(member vs non-member, vs non-member friend)
+
+덧셈, 곱셈과 같은 산술 연산을 제공하기 위해서는 그 연산을 멤버 함수, 논멤버 함수, 혹은 논멤버 프렌드 함수 중 무엇으로 짜야할지 불확실할 수 있다.
+
+너는 곱셈이 Rational 클래스와 연관되어 있기 때문에 곱셈 연산자를 Rational 클래스 안에 구현하는 것이 자연스럽다고 생각할 수 있다.
+
+직관과는 다르게 Item 23은 연관된 클래스에 함수를 넣는 것이 때때로 OOP 원칙에 반한다고 말하고 있지만, 일단 제껴두고 Rational 안에 * 연산자를 구현하는 것을 살펴보자.
+
+```C++
+class Rational {
+  public:
+    
+    const Rational operator*(const Rational& rhs) const;
+};
+```
+
+(결과를 const by-value로 반환하고, argurment를 ref-to-const로 받고 있는 게 왜 그런지를 모르겠다면 Item 3, 20, 21을 참고해라)
+
+
+
+이러한 오버로딩을 통해 Rational 클래스 간 연산을 지원할 수 있다.
+
+
+
+### 혼합형 연산 지원(int * Rational)
+
+하지만 혼합형 연산을 지원하고 싶은 욕심이 생길 수 있다. int를 Rational과 곱할 수 있게 하는 것이다.
+
+하지만 혼합형 연산을 시도하면 둘 중 하나의 경우에만 정상적으로 작동하게 된다.
+
+```c++
+result = oneHalf * 2;	// fine
+result = 2 * oneHalf;	// error!
+```
+
+곱셈은 교환법칙이 성립해야하는데 이는 불길한 징조다.
+
+위의 예를 동일한 함수 형태로 다시 쓰면
+
+```c++
+result = oneHalf.operator*(2);	// fine
+result = 2.operator*(oneHalf);	// error!
+```
+
+oneHalf는 * 연산자를 가지고 있는 클래스의 인스턴스이므로 컴파일러가 그 함수를 부르지만, 2는 associated 클래스를 갖고 있지 않으므로 * 연산자 멤버 함수도 없다. 컴파일러는 다음과 같은 형태의 논멤버 * 연산자 함수도 찾아볼 것이다(namespace나 global 스코프에서):
+
+```c++
+result = operator*(2, oneHalf);	// error!
+```
+
+이 예에서 int와  Rational을 받는 논멤버 연산자*가 없기 때문에 탐색은 실패한다.
+
+
+
+### 암묵적 형 변환
+
+위의 예에서 하나는 성공하고 하나는 실패하는 이유는, 암묵적 형 변환 때문이다.
+
+컴파일러는 너가 int를 argument로 던져주고 그 함수는 Rational을 필요로 한다는 것을 알지만, 또한 너가 제공한 int로 Rational constructor를 불러서 적합한 Rational을 만들어낼 수 있다는 사실도 알고 있다. 실제로 동작은 이런 식으로 이루어진다:
+
+```c++
+const Rational temp(2);
+result = oneHalf * temp;
+```
+
+이것은 non-explicit constructor가 존재하기 때문에 가능하다. ctor가 explicit이라면 다음 둘 중 어느 문장도 컴파일되지 않을 것이다:
+
+```c++
+result = oneHalf * 2;	// error!(with explicit error)
+result = 2 * oneHalf;	// error, same with before case
+```
+
+여기서 두 문장의 동작이 일관된다는 점은 있지만, 너의 목표는 혼합 연산을 일관되게 처리하면서도 지원하게 하는 것이었다.
+
+
+
+### 암묵적 형 변환의 자격
+
+파라미터는 파라미터 리스트에 있을 때에만 암묵적 형 변환을 받을 자격이 생긴다. 멤버 함수가 호출되는 객체(this가 가리키는)에 해당하는 암묵적 파라미터는 암묵적 형변환의 자격을 절대로 갖추지 못한다. 이것이 첫 번째 호출은 컴파일 되고 두 번째는 안 되는 이유다.
+
+두 혼합형 연산을 지원하는 방법은 간단하다:
+
+**\* 연산자를 논멤버 함수로 만들어서 컴파일러가 모든 argument들에 대해 암묵적 형 변환을 수행하는 것을 허용해라.**
+
+```c++
+class Rational {
+    
+};
+
+const Rational operator*(const Rational& lhs,
+                         const Rational& rhs)
+{
+    return Rational(lhs.numerator() * rhs.numerator(),
+                    lhs.denominator() * rhs.denominator());
+}
+Rational oneFourth(1, 4);
+Rational result;
+
+result = oneFourth * 2;
+result = 2 * oneFourth;
+```
+
+
+
+### 논멤버가 friend여야 할까?
+
+이것이 이야기의 아름다운 결말이지만, 걱정이 남는다. * 연산자가 Rational 클래스의 프렌드가 되어야 할까?
+
+여기 케이스의 경우 답은 no다. 이는 연산자*가 Rational의 public 인터페이스만 가지고도 구현될 수 있기 때문이다.
+
+이는 중요한 논의로 이어진다:
+
+**멤버 함수의 반대는 프렌드 함수가 아니라 논멤버 함수다.**
+
+너무 많은 C++ 프로그래머들이 만약 어떤 함수가 클래스에 연관되어 있고 멤버가 되면 안된다면(예를 들어 모든 argument들에 대해 형변환을 제공해야 할 때), 프렌드가 되어야 한다고 알고 있다. 이 예제는 그러한 추론이 잘못되었다는 것을 보여준다.
+
+멤버가 될 수 없다는 것이 친구가 되어야 한다는 것을 의미하지는 않는다.
+
+
+
+이 아이템은 진실만 말하고 있지만 그것이 전부는 아니다. Object-Oriented C++에서 Template C++로 넘어가서 Rational을 클래스 대신에 클래스 template으로 만들게 되면 고려해야 할 새로운 이슈들이 생기고, 그 이슈들을 해결할 새로운 방법들이 있고, 놀라운 설계 함축 의미가 있다.(Item 46)
 
 
 
