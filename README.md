@@ -2,7 +2,9 @@
 
 [Link to TIL repository](https://github.com/egyeasy/TIL)
 
+<br/>
 
+<br/>
 
 ## C++ 정리
 
@@ -10,19 +12,20 @@
 
 [Link to Summary & Example Sources](https://github.com/egyeasy/TIL_public/tree/master/HongC%2B%2B)
 
-
+<br/>
 
 ### Effective C++
 
-[Chap. 0 - Introduction, Chapter 1 - Accustoming Yourself to C++](https://github.com/egyeasy/TIL_public/blob/master/EffectiveC++/%5B2%ED%9A%8C%EC%B0%A8%5D%20Chapter%200,%20Chapter%201.md)
+| Chapter          | Title                                                        |
+| ---------------- | ------------------------------------------------------------ |
+| **Chapter 1, 2** | [Introduction, Accustoming Yourself to C++](https://github.com/egyeasy/TIL_public/blob/master/EffectiveC++/%5B2%ED%9A%8C%EC%B0%A8%5D%20Chapter%200,%20Chapter%201.md) |
+| **Chapter 2**    | [Constructors, Destructors, and Assignment Operators](https://github.com/egyeasy/TIL_public/blob/master/EffectiveC%2B%2B/%5B2%ED%9A%8C%EC%B0%A8%5D%20Chapter%202.md) |
+| **Chapter 3**    | [Resource Management](https://github.com/egyeasy/TIL_public/blob/master/EffectiveC%2B%2B/%5B2%ED%9A%8C%EC%B0%A8%5D%20Chapter%203.md) |
+| **Chapter 4**    | [Designs and Declarations](https://github.com/egyeasy/TIL_public/blob/master/EffectiveC%2B%2B/%5B2%ED%9A%8C%EC%B0%A8%5D%20Chapter%204.md) |
 
-[Chap. 2 - Constructors, Destructors, and Assignment Operators](https://github.com/egyeasy/TIL_public/blob/master/EffectiveC%2B%2B/%5B2%ED%9A%8C%EC%B0%A8%5D%20Chapter%202.md)
+<br/>
 
-[Chap. 3 - Resource Management](https://github.com/egyeasy/TIL_public/blob/master/EffectiveC%2B%2B/%5B2%ED%9A%8C%EC%B0%A8%5D%20Chapter%203.md)
-
-[Chap. 4 - Designs and Declarations](https://github.com/egyeasy/TIL_public/blob/master/EffectiveC%2B%2B/%5B2%ED%9A%8C%EC%B0%A8%5D%20Chapter%204.md)
-
-
+<br/>
 
 ## Problem Solving
 
@@ -30,7 +33,7 @@
 
 [Link to Solutions](https://github.com/egyeasy/TIL_public/tree/master/Leetcode)
 
-
+<br/>
 
 ### Baekjoon Judge(2019.02 - )
 
