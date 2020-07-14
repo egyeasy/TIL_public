@@ -14,13 +14,13 @@
 
 ### Effective C++
 
-[Chap. 0 - Introduction, Chapter 1 - Accustoming Yourself to C++](https://github.com/egyeasy/TIL_public/blob/master/EffectiveC%2B%2B/(2%ED%9A%8C%EC%B0%A8)%20Chapter%200%2C%20Chapter%201.md](https://github.com/egyeasy/TIL_public/blob/master/EffectiveC%2B%2B/(2회차) Chapter 0%2C Chapter 1.md)
+[Chap. 0 - Introduction, Chapter 1 - Accustoming Yourself to C++](https://github.com/egyeasy/TIL_public/blob/master/EffectiveC%2B%2B/\(2%ED%9A%8C%EC%B0%A8\)%20Chapter%200%2C%20Chapter%201.md](https://github.com/egyeasy/TIL_public/blob/master/EffectiveC%2B%2B/\(2회차\) Chapter 0%2C Chapter 1.md)
 
-[Chap. 2 - Constructors, Destructors, and Assignment Operators]([https://github.com/egyeasy/TIL_public/blob/master/EffectiveC%2B%2B/(2%ED%9A%8C%EC%B0%A8)%20Chapter%202.md](https://github.com/egyeasy/TIL_public/blob/master/EffectiveC%2B%2B/(2회차) Chapter 2.md)
+[Chap. 2 - Constructors, Destructors, and Assignment Operators]([https://github.com/egyeasy/TIL_public/blob/master/EffectiveC%2B%2B/\(2%ED%9A%8C%EC%B0%A8\)%20Chapter%202.md](https://github.com/egyeasy/TIL_public/blob/master/EffectiveC%2B%2B/\(2회차\) Chapter 2.md)
 
-[Chap. 3 - Resource Management]([https://github.com/egyeasy/TIL_public/blob/master/EffectiveC%2B%2B/(2%ED%9A%8C%EC%B0%A8)%20Chapter%203.md](https://github.com/egyeasy/TIL_public/blob/master/EffectiveC%2B%2B/(2회차) Chapter 3.md)
+[Chap. 3 - Resource Management]([https://github.com/egyeasy/TIL_public/blob/master/EffectiveC%2B%2B/\(2%ED%9A%8C%EC%B0%A8\)%20Chapter%203.md](https://github.com/egyeasy/TIL_public/blob/master/EffectiveC%2B%2B/\(2회차\) Chapter 3.md)
 
-[Chap. 4 - Designs and Declarations]([https://github.com/egyeasy/TIL_public/blob/master/EffectiveC%2B%2B/(2%ED%9A%8C%EC%B0%A8)%20Chapter%204.md](https://github.com/egyeasy/TIL_public/blob/master/EffectiveC%2B%2B/(2회차) Chapter 4.md)
+[Chap. 4 - Designs and Declarations]([https://github.com/egyeasy/TIL_public/blob/master/EffectiveC%2B%2B/\(2%ED%9A%8C%EC%B0%A8\)%20Chapter%204.md](https://github.com/egyeasy/TIL_public/blob/master/EffectiveC%2B%2B/\(2회차\) Chapter 4.md)
 
 
 
