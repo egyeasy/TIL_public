@@ -757,6 +757,284 @@ result = 2 * oneFourth;
 
 
 
+## Item 25: throw하지 않는 `swap`을 지원하는 것을 고려하라.
+
+swap은 STL의 한 부분으로 도입되어서 exception-safe 프로그래밍의 주축이 되었고, 자신에 대한 할당 가능성에 대처 가능한 공통적인 메커니즘이 되었다. swap은 굉장히 유용하기 때문에 이를 적절하게 구현하는 것은 중요하다. 하지만 특이한 중요성 만큼이나 특이한 복잡성을 가지고 있다.
+
+
+
+### 표준적인 swap 알고리즘
+
+```cpp
+namespace std{
+    template<typename T>
+    void swap(T& a, T& b)
+    {
+        T temp(a);
+        a = b;
+        b = temp;
+    }
+}
+```
+
+너의 타입이 copy constructor와 copy assignment operator를 지원하는 한은 이 기본적인 swap 알고리즘은 특별히 해줄 것 없이 알아서 swap을 잘 해줄 것이다.
+
+
+
+하지만 위에서 나오는 세 번의 복사를 모두 수행하는 것이 탐탁치 않을 수 있다.
+
+어떤 타입들에 대해서는 이런 카피가 굳이 필요하지는 않다 -> 괜히 느리게 swap을 하게 된다.
+
+ex) real data를 갖고 있는 타입에 대한 포인터로 이루어진 타입들(pimpl idiom)
+
+```cpp
+class WidgetImpl {
+  public:
+  private:
+    int a, b, c;
+    std::vector<double> v;
+}
+```
+
+이러한 pimpl idiom을 가진 Widget을 swap한다고 했을 때, 세 번의 복사가 이뤄지는 표준 swap에서는 세 번의 WidgetImpl이 이뤄지게 되고, 이는 매우 비효율적이다.
+
+이를 위해 Widget이 swap될 때 pImpl 포인터가 swap되게 구현할 수 있다. **total template specialization**으로.
+
+
+
+### Total Template Specialization
+
+```cpp
+namespace std {
+  	template<>
+    void swap<Widget>(Widget &a, Widget &b) {
+        swap(a.pImpl, b.pImpl);
+    }
+}
+```
+
+위의 코드는 **컴파일 되지 않는다.**
+
+ pImpl이 Widget의 private member이기 때문이다.
+
+컨벤션적인 대안으로 Widget의 public 멤버 함수로 swap을 수행하는 메소드를 정의하는 것이 있다.
+
+```cpp
+class Widget {
+  public:
+    void swap(Widget& other)
+    {
+        using std::swap;
+        
+        swap(pImpl, other.pImpl);
+    }
+};
+namespace std {
+    template<>
+    void swap<Widget>(Widget& a, Widget& b) {
+        a.swap(b);
+    }
+}
+```
+
+이는 컴파일 될 뿐만 아니라, public swap 멤버 함수를 갖고 있으면서, std::swap이 그 멤버 함수를 부르게 구현되어있는 STL container들과 일관성을 유지한다.
+
+
+
+### Partial Template Specialization
+
+하지만 Widget과 WidgetImpl이 클래스가 아니라 클래스 **템플릿**이라면?
+
+그래서 WidgetImpl에 저장되는 데이터의 타입을 파라미터화하게 될 가능성이 있다.
+
+```cpp
+template<typename T>
+class WidgetImpl {...};
+template<typename T>
+class Widget {...}; 
+```
+
+Widget에서 swap 멤버 함수를 구현하는 것은 여전히 쉽지만,
+
+std::swap을 specialization할 때 문제가 발생한다.
+
+```cpp
+namespace std{
+    template<typename T>
+    void swap<Widget<T>>(WIdget<T>& a, Widget<T>& b) {
+        a.swap(b);
+    }
+}
+```
+
+위의 코드는 **컴파일 되지 않는다!**
+
+C++에서는 class template에 대한 partial specialization은 가능하지만,
+
+function template에 대한 partial specialization은 허용되지 않는다.
+
+
+
+### function template에 partial speicalize를 적용하기 위해 함수 오버로딩을 사용한다면?
+
+```cpp
+namespace std {
+    template<typename T>
+    void swap(Widget<T>& a,
+             Widget<T>& b)
+    {
+        a.swap(b);
+    }
+}
+```
+
+일반적으로 함수 템플릿을 오버로딩하는 것은 괜찮지만,
+
+std는 특별한 namespace여서 std의 템플릿을 totally specialize하는 것은 괜찮지만, 새로운 template(이나 클래스나 함수 등)을 추가하는 것은 괜찮지 않다.
+
+게다가 이 금지된 선을 넘는 프로그램은 대부분 컴파일 되고 실행될 것이지만 undefined behavior를 보이게 된다.
+
+
+
+### non-member non-overloading std swap
+
+방법은 간단하다.
+
+멤버 swap을 부르는 non-member swap을 선언하는 방법은 유지하지만,
+
+그 non-member가 std::swap의 specialization이나 overloading이 되지 않도록 하는 것이다.
+
+```cpp
+namespace WidgetStuff {
+    ...
+    template<typename T>
+    class Widget {...};
+    
+    template<typename T>
+    void swap(Widget<T>& a,
+             Widget<T>& b)
+    {
+        a.swap(b);
+    }
+}
+```
+
+
+
+### name lookup rule
+
+따라서 두 Widget 객체에 대한 swap을 부를 때면 C++의 이름 찾기 규칙에 따라 WidgetStuff 네임스페이스 안의 Widget-specific version이 불리게 될 것이다.
+
+이는 클래스나 클래스 템플릿 모두에 대해 작동하기 때문에, 항상 이 방식을 써야하는 것처럼 보일 수 있다.
+
+하지만 불행하게도 모종의 이유로 **클래스**에 대해서는 **std::swap을 specialize**해야 한다.
+
+따라서 클래스를 위한 버전을 만들고 싶다면 같은 namespace의 non-member version과 std::swap의 specialization을 모두 작성해야 한다.
+
+
+
+그런데 namespace를 쓰지 않으면 위의 모든 것이 계속해서 적용될 것이다. 그러지는 마라.(캡슐화)
+
+
+
+### 클라이언트의 관점
+
+다음 swap이 어떤 swap을 호출하게 될까?
+
+```cpp
+template<typename T>
+void doSomething(T& obj1, T& obj2)
+{
+    swap(obj1, obj2);
+}
+```
+
+1. std의 general한 swap
+2. std의 specialized swap(존재할지 안할지는 모른다)
+3. T-specific한 swap(존재할지 안할지는 모른다, namespace에 있을지 없을지 모른다, 하지만 std에 없는 것은 확실하다)
+
+
+
+만약 일단 T-specific한 버전을 호출하고, 그게 없다면 general version을 찾게 하고 싶다면 다음과 같이 구현하라.
+
+```cpp
+template<typename T>
+void doSomething(T& obj1, T& obj2) {
+    using std::swap;
+    swap(obj1, obj2);
+}
+```
+
+C++ 네임 찾기 룰에 따라
+
+1. T-specific swap을 global 또는 같은 namespace(T가 WidgetStuff 네임스페이스 안에 있다면 컴파일러가 argument-dependent하게 WidgetStuff에서 swap을 찾을 것)에서 찾게 될 것이다.
+2. T-specific한 swap이 없다면, std의 swap을 쓸 것이다. -> 이 때에도 컴파일러는 general template보다는 T-specific template을 선호하게 된다.
+
+
+
+C++이 어떤 함수를 호출할 지에 영향을 미치지 않기 위해 호출을 qualify하지 않는 것이 중요하다.
+
+```cpp
+std::swap(obj1, obj2);
+```
+
+위와 같이 쓰지 마라.
+
+컴파일러에게 더 적절한 T-specific swap을 찾을 가능성을 없애버린다.
+
+어떤 프로그래머들은 실제로 이렇게 swap을 호출하기 때문에서라도, 너의 클래스에 대해 totally specialize하는 것이 중요하다.(앞의 '모종의 이유'에 해당하는 듯?)
+
+
+
+### summary
+
+우리는 지금까지 default swap, member swap, non-member swap, specialization of std::swap, call to swap에 대해 논의했다.
+
+요약하자면
+
+1. swap의 디폴트 구현이 너의 클래스나 클래스 템플릿에 대해 수용할 만한 효율성을 제공한다면, 아무 것도 할 필요가 없다. 디폴트 버전을 써도 괜찮다.
+
+2. (클래스나 템플릿이 pimpl idiom을 쓰는 등의 이유로) 디폴트 버전이 충분치 않다면, 다음을 수행해라.
+
+   1) 두 오브젝트의 value를 효율적으로 swap하는 **public swap member function**을 제공하라. 이 함수는 절대 throw exception하지 않는다.
+
+   2) 클래스나 템플릿과 같은 namespace에 **non-member swap**을 제공하고, 그 swap이 swap member function을 호출하게 하라.
+
+   3) 클래스나 클래스 템플릿을 작성한다면, std::swap을 specialize하고, 그 swap이 swap member function을 부르게 하라.
+
+3. 너가 swap을 호출한다면, using declaration을 통해 너의 함수에서 std::swap이 visible하게 만들고, swap을 어떤 namespace qualification도 없이 호출해라.
+
+
+
+### member swap NEVER throw exceptions
+
+그 이유는 swap이 클래스나 템플릿에 강력한 exception-safety 개런티를 제공하기 때문이다.
+
+이러한 특징은 멤버 버전에서만 나타난다.
+
+non-member 버전에서는 default swap이 copy construction과 copy assignment에 베이스를 두고 있기 때문에 exception을 throw할 여지가 있다.
+
+커스텀 swap을 만들게 되면 두 가지 장점을 얻게 된다.
+
+1. value를 swap하는 효율적인 방안을 얻는다.
+2. throw exception하지 않게 된다.
+
+이 두 장점은 항상 같이 가게 되는데, 그 이유는 아주 효율적인 swap은 built-in type들의 연산(pimple idiom의 포인터 연산 등)에 기초하고 있고,
+
+built-in type의 연산은 절대 throw exception하지 않기 때문이다.
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
