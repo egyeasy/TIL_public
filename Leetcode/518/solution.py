@@ -5,11 +5,13 @@ class Solution:
     def change(self, amount: int, coins: List[int]) -> int:
         N = len(coins)
         s = [[0] * (amount + 1) for _ in range(N + 1)]
-        gcd_ = coins[0]
-        for coin in coins:
-            gcd_ = gcd(gcd_, coin)
-
-        print(gcd_)
+        
+        if not coins:
+            gcd_ = 1
+        else:
+            gcd_ = coins[0]
+            for coin in coins:
+                gcd_ = gcd(gcd_, coin)
         
         for i in range(N + 1):
             s[i][0] = 1
