@@ -1,9 +1,17 @@
-# 2020.08.05
-
 # 트라이 구현 참고
 # https://blog.ilkyu.kr/entry/%ED%8C%8C%EC%9D%B4%EC%8D%AC%EC%97%90%EC%84%9C-Trie-%ED%8A%B8%EB%9D%BC%EC%9D%B4-%EA%B5%AC%ED%98%84%ED%95%98%EA%B8%B0
 
 from collections import deque
+count = 0
+
+def backtrack(node, len_question, depth):
+    global count
+    if len_question == depth:
+        if node.data:
+            count += 1
+        return
+    for child in node.children.values():
+        backtrack(child, len_question, depth + 1)
 
 class Node(object):
 
@@ -49,9 +57,10 @@ class Trie(object):
     주어진 prefix로 시작하는 단어들을
     트라이에서 찾아 리스트 형태로 반환합니다.
     """
-    def starts_with(self, prefix, len_word):
-        curr_node = self.head
+    def starts_with(self, prefix, len_question):
+        global count
         result = 0
+        curr_node = self.head
         subtrie = curr_node
 
         # 트라이에서 prefix를 찾고,
@@ -65,14 +74,15 @@ class Trie(object):
         
         # bfs로 prefix subtrie를 순회하며
         # data가 있는 노드들(=완전한 단어)를 찾는다.
-        queue = deque(subtrie.children.values())
-
+        queue = list(subtrie.children.values())
+        
         while queue:
-            curr = queue.popleft()
-            if curr.data != None and len(curr.data) == len_word:
-                result += 1
-
-            queue += deque(curr.children.values())
+            curr = queue.pop()
+            if curr.data != None:
+                if len(curr.data) == len_query:
+                    result += 1
+            elif len(curr.data) < len_query:
+                queue += list(curr.children.values())
         
         return result
 
@@ -81,22 +91,25 @@ class Trie(object):
 def solution(words, queries):
     len_query = len(queries)
     answer = [0] * len_query
-    trie = Trie()
-    reversed_trie = Trie()
+    tries = [Trie() for _ in range(10001)]
+    r_tries = [Trie() for _ in range(10001)]
 
     for word in words:
-        trie.insert(word)
-        reversed_trie.insert(word[::-1])
+        tries[len(word)].insert(word)
+        r_tries[len(word)].insert(word[::-1])
 
     for i in range(len_query):
         query = queries[i]
         if query[-1] == "?":
-            answer[i] = trie.starts_with(query.split("?")[0], len(query))
+            prefix = query.split("?")[0]
+            answer[i] = tries[len(query)].starts_with(prefix, len(query) - len(prefix))
         else:
             reversed_query = query[::-1]
-            answer[i] = reversed_trie.starts_with(reversed_query.split("?")[0], len(query))
+            prefix = reversed_query.split("?")[0]
+            answer[i] = r_tries[len(query)].starts_with(prefix, len(query) - len(prefix))
         
     return answer
+
 
 print(solution(["frodo", "front", "frost", "frozen", "frame", "kakao"],
                 ["fro??", "????o", "fr???", "fro???", "pro?"]))
