@@ -1,20 +1,32 @@
+# 2020.08.12 통과
+
 mat = []
+
+def is_ok(x, y):
+    n = len(mat)
+    return 0 <= x < n and 0 <= y < n
+
+def is_ki(x, y):
+    return mat[x][y] == 1 or mat[x][y] == 3
+
+def is_bo(x, y):
+    return mat[x][y] == 2 or mat[x][y] == 3
 
 def is_possible_c_bo(pos):
     global mat
     x = pos[0]
     y= pos[1]
-    if mat[x][y-1] == 1 or mat[x+1][y-1] == 1:
+    if (is_ok(x, y-1) and is_ki(x, y-1)) or (is_ok(x+1, y-1) and is_ki(x+1, y-1)):
         return True
 
     # 왼쪽이 보이면
     left_ok = False
     right_ok = False
-    if mat[x - 1][y] == 2:
+    if is_ok(x - 1, y) and is_bo(x-1, y):
         left_ok = True
     
     # 오른쪽이 보이면
-    if mat[x + 1][y] == 2:
+    if is_ok(x+1, y) and is_bo(x+1, y):
         right_ok = True
     # right ok
     # left ok & right ok 이면 ok
@@ -25,7 +37,9 @@ def is_possible_c_ki(pos):
     global mat
     x = pos[0]
     y = pos[1]
-    return y == 0 or mat[x][y - 1] == 1 or mat[x - 1][y] == 2 or mat[x][y] == 2
+    return y == 0 or (is_ok(x, y-1) and is_ki(x, y-1)) or\
+        (is_ok(x-1, y) and is_bo(x-1, y)) or\
+            (is_ok(x, y) and is_bo(x, y))
 
 
 def is_possible_d_ki(pos):
@@ -34,7 +48,7 @@ def is_possible_d_ki(pos):
     y = pos[1]
     mat[x][y] -= 1
     # 위 기둥
-    if mat[x][y + 1] == 1 or mat[x][y + 1] == 3:
+    if is_ok(x, y+1) and is_ki(x, y+1):
         mat[x][y + 1] -= 1
         if not is_possible_c_ki([x, y + 1, 0]):
             mat[x][y + 1] += 1
@@ -42,7 +56,7 @@ def is_possible_d_ki(pos):
             return False
         mat[x][y + 1] += 1
     # 오른쪽 보
-    if mat[x][y + 1] == 2 or mat[x][y + 1] == 3:
+    if is_ok(x, y+1) and is_bo(x, y+1):
         mat[x][y + 1] -= 2
         if not is_possible_c_bo([x, y + 1, 1]):
             mat[x][y + 1] += 2
@@ -50,7 +64,7 @@ def is_possible_d_ki(pos):
             return False
         mat[x][y + 1] += 2
     # 왼쪽 보
-    if mat[x - 1][y + 1] == 2 or mat[x - 1][y + 1] == 3:
+    if is_ok(x-1, y+1) and is_bo(x-1, y+1):
         mat[x - 1][y + 1] -= 2
         if not is_possible_c_bo([x - 1, y + 1, 1]):
             mat[x - 1][y + 1] += 2
@@ -71,15 +85,28 @@ def is_possible_d_bo(pos):
     for i in range(4):
         ki_x = kis_x[i]
         ki_y = kis_y[i]
-        if mat[ki_x][ki_y] == 1 or mat[ki_x][ki_y] == 3:
+        if is_ok(ki_x, ki_y) and is_ki(ki_x, ki_y):
             mat[ki_x][ki_y] -= 1
             if not is_possible_c_ki([ki_x, ki_y, 0]):
                 mat[ki_x][ki_y] += 1
                 mat[x][y] += 2
                 return False
-                
-                            
+            mat[ki_x][ki_y] += 1
 
+    bos_x = [x - 1, x + 1]
+    bos_y = [y, y]
+    for i in range(2):
+        bo_x = bos_x[i]
+        bo_y = bos_y[i]
+        if is_ok(bo_x, bo_y) and is_bo(bo_x, bo_y):
+            mat[bo_x][bo_y] -= 2
+            if not is_possible_c_bo([bo_x, bo_y, 1]):
+                mat[bo_x][bo_y] += 2
+                mat[x][y] += 2
+                return False
+            mat[bo_x][bo_y] += 2
+
+    return True
         
 def print_mat(n):
     global mat
@@ -107,11 +134,11 @@ def solution(n, build_frame):
                     answer.append(pos)
         else: # 삭제
             if frame[2]: # 보
-                pass
+                if is_possible_d_bo(pos):
+                    answer.remove(pos)
             else: # 기둥
                 if is_possible_d_ki(pos):
                     answer.remove(pos)
-
     
     print_mat(n)
 
