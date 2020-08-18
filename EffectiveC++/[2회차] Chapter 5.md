@@ -139,6 +139,128 @@ B를 쓰도록 하라.
 
 
 
+## Item 27: 캐스팅을 최소화하라.
+
+C++의 규칙은 타입 에러가 불가능한 것을 보장하도록 디자인되어있다.
+
+이론적으로 네 프로그램이 정상적으로 컴파일 되면 그것은 어떤 객체에도 안전하지 않거나 비상식적인 연산을 시도하지 않는다.
+
+
+
+불행하게도 캐스팅은 타입 시스템을 전복시키면서 알아차리기 쉬운, 또는 이상하고 미묘한 문제들을 낳는다.
+
+
+
+일반적으로 같은 캐스팅을 수행하는 3가지 방법이 있다.
+
+#### C-style
+
+```c++
+(T) expression
+```
+
+#### Function-style
+
+```c++
+T(expression)
+```
+
+#### new-style or C++-style
+
+```c++
+const_cast<T>(expression)
+dynamic_cast<T>(expression)
+reinterpret_cast<T>(expression)
+static_cast<T>(expression)
+```
+
+const_cast : 객체의 const성을 던져버리기 위해 쓰임
+
+dynamic_cast : 안전한 downcasting을 하기 위해 쓰임. old-style syntax로 수행될 수 없음. 많은 런타임 코스트
+
+reinterpret_cast : 구현에 의존적인 결과(포인터를 int로 casting하는 것 같은)를 만들어내기 위한 low-level cast에 쓰임. low-level 밖에서는 거의 쓰이면 안됨.
+
+static_cast : implicit conversion을 강제하기 위해 쓰임. 그 반대의 경우도 쓰임.(const -> non-const는 불가)
+
+
+
+old-style도 여전히 합법적이지만, new style이 더 선호할만하다.
+
+그 이유는
+
+1. 코드에서 알아보기가 훨씬 쉽다.
+2. 각 cast의 목적을 좁게 구체화함으로써 컴파일러가 에러를 진단하기 쉽게 만든다.
+
+
+
+old-style을 쓰는 유일한 순간은 함수에 객체를 전달하기 위해 explicit 생성자를 호출할 때이다.
+
+```c++
+class Widget {
+  public:
+    explicit Widget(int size);
+};
+void doSomeWork(const Widget& w);
+doSomeWork(Widget(15));					// function-style
+
+doSomeWork(static_cast<Widget>(15));	// C++-style
+```
+
+객체 생성은 cast처럼 느껴지지 않기 때문에 나는 아마 function-style을 선호할 것이다.
+
+(실제로 둘은 같은 기능을 하고 있다 - doSomeWork에 전달할 임시적인 Widget 객체를 생성)
+
+하지만 core dump로 이어지는 코드의 경우에도 너가 작성할 때는 상당히 합리적이라고 느낀다.
+
+그러니까 그 느낌을 무시하고 new-style cast를 항상 쓰는 게 낫다.
+
+
+
+### cast는 의외의 기능을 수행한다
+
+많은 프로그래머들이 캐스트가 컴파일러에게 한 타입을 다른 타입으로 다루라는 것밖에 안 시키는 걸로 알고 있다.
+
+하지만 이는 오해다.
+
+어떤 종류의 타입 변환이든 종종 런타임에 실행되는 코드로 이어지는데,
+
+```c++
+int x, y;
+...
+double d = static_cast<double>(x) / y; // x를 y로 나눔. 하지만 floating point division을 씀
+```
+
+int x를 double로 cast하는 것은 코드를 생성하는 데 성공한다.
+
+이것은 많은 아키텍쳐에서 int의 표현과 double의 표현이 다르기 때문이다.
+
+
+
+```c++
+class Base {...};
+class Derived: public Base {...};
+derived d;
+Base *pb = &d;
+```
+
+*pb와 &d 두 포인터는 같지 않을 수도 있다.
+
+같지 않을 경우 런타임에 Derived* 포인터에 offset이 적용돼서 정확한 Base* 포인터 값이 가져와진다.
+
+이 예는 하나의 객체가 여러 주소를 가질 수 있다는 것을 보여준다. 이것은 C++에서만 일어나는 일이다.
+
+다중 상속을 쓰고 있을 경우엔 거의 항상 일어나고, 단일 상속에서도 일어날 수 있다.
+
+따라서 C++에서 무언가가 어떻게 이뤄져있는지 함부로 가정하고 써서는 안 된다.
+
+
+
+하지만 offset이 항상 쓰이는 것은 아니다.
+
+객체가 lay out 되고 주소가 계산되는 방식은 컴파일러마다 다르다.
+
+그것은 너가 어떻게 작동하는지를 알고 있는 cast가 다른 플랫폼에서는 작동하지 않을 수도 있다는 것을 의미한다
+
 
 
 
