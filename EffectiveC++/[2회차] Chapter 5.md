@@ -222,17 +222,19 @@ doSomeWork(static_cast<Widget>(15));	// C++-style
 
 하지만 이는 오해다.
 
-어떤 종류의 타입 변환이든 종종 런타임에 실행되는 코드로 이어지는데,
+어떤 종류의 타입 변환이든 종종 런타임에 실행되는 (추가적인) 코드를 만들어내게 되는데,
 
 ```c++
 int x, y;
 ...
-double d = static_cast<double>(x) / y; // x를 y로 나눔. 하지만 floating point division을 씀
+double d = static_cast<double>(x) / y; // x를 y로 나눔. floating point division을 씀
 ```
 
-int x를 double로 cast하는 것은 코드를 생성하는 데 성공한다.
+int x를 double로 cast하는 것은 (추가적인) 코드를 만들어내게 된다.
 
 이것은 많은 아키텍쳐에서 int의 표현과 double의 표현이 다르기 때문이다.
+
+-> 그러니까 단순히 다른 타입으로 취급하는 것이 아니라 새로운 연산을 추가하는 것이다.
 
 
 

@@ -1,30 +1,27 @@
 # 2020.08.17
-from collections import deque
 answer = -1
 
 def find(arr, dists, dis_i):
     global answer
     no_one = True
+    print(arr, dists, dis_i)
     for num in arr:
         if num == 1:
             no_one = False
             break
     if no_one and (answer == -1 or dis_i < answer):
+        
         answer = dis_i
     else:
         if dis_i == len(dists):
-            answer = -1
             return
         N = len(arr)
         for i, num in enumerate(arr):
+            new_arr = [_ for _ in arr]
             if num == 1 and i + dists[dis_i] + 1 < N:
-                remember = deque()
                 for j in range(i, i + dists[dis_i] + 1):
-                    remember.append(arr[j])
-                    arr[j] = 2
-                find(arr, dists, dis_i + 1)
-                for j in range(i, i + dists[dis_i] + 1):
-                    arr[j] = remember.popleft()
+                    new_arr[j] = 2
+                find(new_arr, dists, dis_i + 1)
     
 
 def solution(n, weak, dist):
@@ -52,11 +49,10 @@ def solution(n, weak, dist):
     weak.pop()
     
     print("start:", max_start)
-    print()
     
     arr = [0] * n
     idx = 0
-    for i in range(max_start, max_start + n):
+    for i in range(weak[max_start], weak[max_start] + n):
         real_idx = i % n
         arr[idx] = wall[real_idx]
         idx += 1
