@@ -1,4 +1,4 @@
-# Chapter 4. Implementations
+# Chapter 5. Implementations
 
 클래스의 적절한 정의, 함수의 적절한 선언은 가장 중요한 요소다.
 
@@ -264,6 +264,181 @@ Base *pb = &d;
 그것은 너가 어떻게 작동하는지를 알고 있는 cast가 다른 플랫폼에서는 작동하지 않을 수도 있다는 것을 의미한다
 
 
+
+
+
+## Item 28: 객체 내부에 대한 "핸들"을 리턴하는 것을 피하라.
+
+사각형과 관련된 어플리케이션을 다루고 있다고 가정하자.
+
+사각형은 UpperLeft corner와 LowerRight corner로 표현될 수 있다.
+
+Rectangle 객체를 작게 유지하기 위해 Point들을 struct에 담고, Rectangle은 그 struct의 포인터를 갖고 있게 했다고 하자.
+
+
+
+```c++
+class Point {
+  public:
+    Point(int x, int y);
+    
+    void setX(int newVal);
+    void setY(int newVal);
+};
+
+struct RectData {
+    Point ulhc;
+    Point lrhc;
+};
+
+class Rectangle {
+  private:
+    std::shared_ptr<RectData> pData;
+};
+```
+
+Rectangle 클라이언트는 Rectangle의 크기를 설정할 필요가 있을 수 있기 때문에
+
+클래스는 upperLeft, lowerRight 함수를 제공하기로 한다.
+
+하지만 Item 20에서 봤던 대로 `Point`는 user-defined type이므로 value로 전달하는 것보다 **reference로 전달하는 것이 빠르다.**
+
+그래서 이 함수들을 reference로 리턴하게 만들었다고 해보자.
+
+```c++
+class Rectangle {
+  public:
+    Point& upperLeft() const { return pData->ulhc; }
+    Point& lowerRight() const { return pData->lrhc; }
+};
+```
+
+이것은 컴파일되긴 하지만 틀렸다. 자기모순이다.
+
+1. 한편으로는 upperLeft와 lowerRight가 **const 멤버 함수**로 선언이 되어있다
+
+   Rectangle 클라이언트들에게 Point가 무엇인지 알려주는 것까지만 제공하기 위해서이다.(변경은 불가하도록)
+
+2. 다른 한편, 두 함수는 **private internal data에 대한 reference**를 리턴한다.
+
+   호출자가 internal data를 변경할 수 있게 된다.
+
+예를 들어:
+
+```c++
+Point coord1(0, 0);
+Point coord2(100, 100);
+
+const Rectangle rec(coord1, coord2);
+
+rec.upperLeft().setX(50);
+```
+
+rec이 const임에도 Point들을 변경하는 것이 가능하다.
+
+
+
+이는 두 가지 가르침을 준다.
+
+1. 데이터 멤버는 그 멤버에 대한 **reference를 리턴하는 가장 접근성이 높은 함수** 만큼만 캡슐화 되어있다.
+
+   upperLeft, lowerRight public 함수가 Point에 대한 reference를 제공하므로 Point는 사실상 public data member이다.
+
+2. const 멤버 함수가 객체(Rectangle)의 밖에 저장되어 있는 데이터(Point)의 reference를 리턴하면, 함수의 호출자는 데이터(Point)를 변경할 수 있다.
+   (이것은 bitwise constness의 단점이다 - Item 3)
+
+
+
+여기서는 멤버 함수가 레퍼런스를 리턴했지만, pointer나 iterator를 리턴했어도 같은 이유로 같은 문제가 발생한다.
+
+Reference, Pointer, Iterator는 모두 **handle**(다른 객체를 얻을 수 있는 수단)이다.
+
+객체 내부에 대한 handle을 리턴한는 것은 객체의 캡슐화와 상충하는 리스크가 있다.
+
+앞에서와 봤던대로, const 멤버 함수가 객체의 상태를 바꾸게 될 수도 있는 것이다.
+
+
+
+### 멤버 함수에 대한 접근성
+
+우리는 주로 객체의 "내부(internal)"를 data member라고 인식하지만,
+
+public이 아닌 **멤버 함수**도 객체의 내부에 포함된다.
+
+따라서 멤버 함수에 대한 handle을 리턴하지 않는 것도 중요하다.
+
+즉 어떤 멤버 함수가 자신보다 접근성이 더 낮은 멤버 함수의 포인터를 리턴하는 일이 없어야 한다는 것이다.
+
+
+
+### 해결책
+
+앞에서 봤던 Rectangle 문제로 돌아오자.
+
+upperLeft, lowerRight와 관렪된 문제에서 해결책은 리턴 타입에 const를 붙이는 것이다.
+
+```c++
+class Rectangle {
+  public:
+    const Point& upperLeft() const {...}
+    const Point& lowerRight() const {...}
+};
+```
+
+이런 디자인에서 클라이언트는 rectangle을 정의하는 **Point를 읽을 수 있지만 변경할 수는 없다**. -> upperLeft, lowerRight를 const로 선언하는 것이 거짓말이 아니게 된다.
+
+객체의 **캡슐화** 문제와 관련하여서는, Rectangle을 이루고 있는 Point가 무엇인지 클라이언트들이 볼 수 있게 해놓았다 -> **캡슐화의 완화**라고 할 수 있다.
+
+하지만 write access는 금지되어 있다 -> **제한된 완화**에 해당한다.
+
+
+
+### dangling handle 문제
+
+upperLeft, lowerRight는 여전히 객체 내부에 대한 handle을 리턴하고 있긴 하다.
+
+이것은 dangling handle이라는 문제로 이어질 수 있다. -> handle이 더 이상 존재하지 않는 객체의 부분을 참조하는 것이다.
+
+그렇게 사라지는 개체의 가장 흔한 케이스는 함수 리턴 value이다.
+
+```c++
+const Rectangle boundingBox(const GUIObject& obj);
+
+GUIObject* pgo;
+const Point* pUpperLeft = &(boundingBox(*pgo).upperLeft());
+```
+
+boundingBox에 대한 호출은 새로운, **임시적인** Rectangle 객체를 리턴할 것이다.
+
+그 객체는 이름이 없으므로 temp라고 부르자.
+
+temp에 대한 upperLeft가 호출되면, upperLeft는 temp의 내부에 대한 reference를 리턴한다.
+
+문장의 끝에서 temp는 destroy 된다 -> temp의 Point들도 destroy된다. -> pUpperLeft는 존재하지 않는 객체를 가리키고 있게 된다.(dangling)
+
+
+
+이것이 객체 내부에 대한 handle을 리턴하는 함수가 위험한 이유이다.
+
+(이 문제에 있어서는) handle이 포인터인지, 레퍼런스인지, iterator인지는 중요하지 않고,
+
+멤버 함수가 const 멤버 함수인지도 중요하지 않고,
+
+멤버 함수가 const한 handle을 반환하고 있는지도 중요하지 않다.
+
+중요한 것은 **handle이 리턴되고 있다**는 것이다. -> handle이 참조하고 있는 객체보다 handle 자신이 더 오래 살아남게 되는(dangle하게 되는) 리스크가 존재하게 된다.
+
+
+
+그렇다고 handle을 리턴하는 멤버 함수를 절대로 쓰면 안 된다는 것은 아니다.
+
+가끔은 써야 하는 예외가 있다.
+
+operator[]는 string과 vector에 대한 individual element를 꺼낼 수 있게 하고,
+
+operator[]는 컨테이너 안의 데이터에 대한 reference를 리턴하는 방식으로 작동한다.
+
+컨테이너가 소멸되면 데이터도 소멸된다.
 
 
 
