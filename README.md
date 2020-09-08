@@ -22,10 +22,19 @@
 | **Chapter 2**    | [Constructors, Destructors, and Assignment Operators](https://github.com/egyeasy/TIL_public/blob/master/EffectiveC%2B%2B/%5B2%ED%9A%8C%EC%B0%A8%5D%20Chapter%202.md) |
 | **Chapter 3**    | [Resource Management](https://github.com/egyeasy/TIL_public/blob/master/EffectiveC%2B%2B/%5B2%ED%9A%8C%EC%B0%A8%5D%20Chapter%203.md) |
 | **Chapter 4**    | [Designs and Declarations](https://github.com/egyeasy/TIL_public/blob/master/EffectiveC%2B%2B/%5B2%ED%9A%8C%EC%B0%A8%5D%20Chapter%204.md) |
+| **Chapter 5**    | [Implementations](https://github.com/egyeasy/TIL_public/blob/master/EffectiveC%2B%2B/[2회차] Chapter 5.md) |
 
 <br/>
 
 <br/>
+
+## Computer Science
+
+### 운영체제, 아주 쉬운 세 가지 이야기
+
+[Link to Summary](https://github.com/egyeasy/TIL_public/tree/master/운영체제_TEP)
+
+
 
 ## Problem Solving
 

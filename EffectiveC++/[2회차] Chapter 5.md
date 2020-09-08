@@ -261,7 +261,174 @@ Base *pb = &d;
 
 객체가 lay out 되고 주소가 계산되는 방식은 컴파일러마다 다르다.
 
-그것은 너가 어떻게 작동하는지를 알고 있는 cast가 다른 플랫폼에서는 작동하지 않을 수도 있다는 것을 의미한다
+그것은 너가 어떻게 작동하는지를 알고 있는 cast가 다른 플랫폼에서는 작동하지 않을 수도 있다는 것을 의미한다.
+
+
+
+캐스트의 흥미로운 점 중 하나는, 겉보기에는 맞는 것처럼 쓰기는 쉽지만 실제로는 틀릴 수 있다는 점이다.
+
+많은 어플리케이션 프레임워크에서 derived class의 virtual 멤버 함수의 구현체는 base class 함수를 먼저 호출한다.
+
+
+
+
+
+우리가 Window base class와 SpecialWindow derived class를 가지고 있다고 해보자.
+
+둘 다 `onResize` 함수를 정의하고 있다.
+
+게다가 SpecialWindow는 Window의 onResize를 먼저 호출하도록 기대된다고 하자.
+
+다음과 같이 작성했을 때 맞는 것처럼 보이지만 실제로는 틀리다.
+
+```c++
+class Window {
+  public:
+    virtual void onResize() {...}
+};
+
+class SpecialWindow: public Window {
+  public:
+    virtual void onResize() {
+      static_cast<Window>(*this).onResize();
+    }
+};
+```
+
+(old-style cast를 써도 결과는 같다)
+
+결과적으로 Window::onResize가 호출된다.
+
+하지만 너의 예상과는 다르게, **현재의 객체에 Window::onResize가 호출되지는 않는다!**
+
+대신에 *this의 base class part가 **일시적으로 copy되어 생성되고** 이것에 대해 onResize가 호출되게 된다.
+
+Window::onResize가 객체를 변경하는 로직을 수행한다면, 복사된 객체가 변경되게 된다.
+
+SpecialWindow::onResize가 그 이후의 로직에서 변경을 수행한다면, 객체는 invalid한 상태로 변화하게 된다.
+
+
+
+따라서,
+
+컴파일러가 *this를 base class object로 다루지 않도록, 현재의 객체에 대해 base class version의 onResize 함수가 불리도록 하려면:
+
+```c++
+class SpecialWindow: public Window {
+  public:
+    virtual void onResize() {
+        Window::onResize();
+    }
+};
+```
+
+
+
+### dynamic_cast
+
+이러한 예제에서 또한 알 수 있는 것은
+
+너가 cast를 하려고 할 때, 잘못된 접근을 하고 있을 수도 있다는 것이다.
+
+이 상황에서는 dynamic_cast를 썼어야 했다.
+
+
+
+주의할 점 : **dynamic_cast**는 상당히 느리다.
+
+최소한 하나의 흔한 구현에서 클래스의 이름을 비교하는 방식으로 cast가 이루어진다.
+
+이런 식으로 구현된 데는 특정한 이유가 있지만(dynamic linking 지원 관련)
+
+아무튼 performance에 민감한 코드에서는 dynamic_cast에 유의해야 한다.
+
+
+
+dynamic_cast를 쓰는 일반적인 목적은,
+
+**객체를 다루기 위해 base class에 대한 pointer나 reference만 가지고 있는 상황에서**
+
+**derived class로 여겨지는 객체에 대해 derived class operation을 수행**하기 위해서이다.
+
+이러한 문제를 피하기 위해 두 가지 일반적인 방법이 있다.
+
+
+
+1. **derived class를 직접적으로 가리키는 포인터를 담고 있는 컨테이너를 써라.**
+
+   그렇게 함으로써 base class interface를 통해 객체를 다뤄야 하는 상황을 없애라.
+
+   Window와는 다르게 SpecialWindow만이 blink() 함수를 가지고 있다면,
+
+   다음과 같이 하는 대신에:
+
+   ```c++
+   typedef
+       std::vector<std::shared_ptr<Window>>VPW;
+   VPW winPtrs;
+   
+   for (VPW::iterator iter = winPtrs.begin();
+        iter != winPtrs.end();
+        ++iter) {
+     if (SpecialWindow *psw = dynamic_cast<SpecialWindow*>(iter->get()))
+         psw->blink();
+   }
+   ```
+
+   다음과 같이 해라:
+
+   ```c++
+   typedef std::vector<std::shared_ptr<SpecialWindow>> VPSW;
+   VPSW winPtrs;
+   
+   for (VPSW::iterator iter = winPtrs.begin();
+        iter != winPtrs.end();
+        ++iter)
+     (*iter)->blink();
+   ```
+
+   물론 이러한 접근에서는 같은 컨테이너의 여러 종류의 Window 파생 클래스를 담을 수 없다.
+
+   여러 Window type을 다루기 위해서는 여러 종류의 type-safe 컨테이너가 필요해진다.
+
+
+
+2. **base class interface를 통해 쓸 법한 Window 파생 클래스의 기능들을 모두 base class의 virtual function으로 제공하라.**
+
+   SpecialWindow만 blink할 수 있더라도 base class에도 해당 함수를 선언하는 것이다.
+
+   ```c++
+   class Window {
+     public:
+       virtual void blink() {}
+   };
+   
+   // Window를 담은 container의 item들에 대해 blink() 호출
+   ```
+
+
+
+위의 2가지 방법 모두 보편적으로 적용 가능한 것은 아니지만 많은 경우에 있어 dynamic_casting의 대안을 제공해준다.
+
+반드시 너가 피해야 하는 디자인은 cascading dynamic_cast이다.
+
+(if, else if 마다 dynamic_cast를 통해 어떤 파생클래스인지를 비교)
+
+이러한 코드는 크고 느리고, 보기에도 이상하다(Window class의 hierarchy가 바뀌면 저 코드도 바꿔야 하는 상황이 생긴다)
+
+저런 코드는 virtual function을 호출하는 방식에 기반하여 대체되어야 한다.
+
+
+
+좋은 c++ 코드는 cast를 거의 사용하지 않지만, cast를 모두 제거하는 것은 일반적으로 실용적이지 않다.
+
+int to double cast를 cast를 쓰기에 합리적이지만, 꼭 필요한 상황이 아니기도 하다.
+
+cast는 최대한 고립되어야 한다 -> interface가 내부적으로 지저분한 일들을 처리해줌으로써 client를 보호해야 한다.
+
+
+
+
 
 
 
@@ -444,6 +611,10 @@ operator[]는 컨테이너 안의 데이터에 대한 reference를 리턴하는 
 
 
 
+
+
+
+
 ## Item 29: exception-safe한 code를 위해 노력하라.
 
 배경 이미지를 가지고 있는 GUI 메뉴를 표현하는 클래스를 가지고 있다고 해보자.
@@ -612,10 +783,6 @@ Image constructor가 throw exception하면 input stream에 대한 read marker는
 그런 움직임은 프로그램의 다른 부분에서 발견할 수 있는 상태 변화에 해당할 수 있다.
 
 이 이슈를 처리하지 않으면 위의 예제는 basic exception safety guarantee에 머물게 된다.
-
-
-
-
 
 
 

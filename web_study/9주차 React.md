@@ -348,7 +348,7 @@ useXXXX 으로 이름지어지는 다양한 hook들이 있다.
 ```js
 import React, {useState, useEffect} from 'react';
 import Sub from './Sub'
-import { axios } from axios;
+import axios from 'axios';
 
 function App() {
   const [count, setCount] = useState(0); // 변수 이름, 변수 변경할 함수, 초기값 0
