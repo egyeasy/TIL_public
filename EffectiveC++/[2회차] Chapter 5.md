@@ -444,6 +444,199 @@ operator[]는 컨테이너 안의 데이터에 대한 reference를 리턴하는 
 
 
 
+## Item 29: exception-safe한 code를 위해 노력하라.
+
+배경 이미지를 가지고 있는 GUI 메뉴를 표현하는 클래스를 가지고 있다고 해보자.
+
+클래스는 thread 환경에서 사용될 수 있도록 디자인 되어서, 병행성 컨트롤을 위해 mutex를 가지고 있다.
+
+
+
+```c++
+void PrettyMenu::changeBackground(std::istream& imgSrc) {
+  	lock(&mutex);
+    
+  	delete bgImage;
+  	++imageChanges;
+    bgImage = new Image(imagSrc);
+    
+    unlock(&mutex);
+}
+```
+
+exception safety 관점에서 이 함수는 정말 나쁘다.
+
+exception safety의 두 요건은 다음과 같다.
+
+1. **리소스를 leak하지 않는다.**
+
+   위 코드는 new Image가 exception을 뱉었을 때 unlock이 실행되지 않고, mutex를 영원히 갖고 있게 된다.
+
+2. **자료구조가 corrupted되지 않는다.**
+
+   new Image가 throw하면 gmImage는 delete된 객체를 가리키고 있게 된다.
+
+   게다가 new image가 할당되지 않았음에도 imageChanges는 증가되었다.
+
+
+
+1. 리소스 leak 문제 대응
+
+   리소스 이슈에 대한 대처는 간단하다. Item 13, 14를 참고하여 적절한 방식으로 mutex가 해제되도록 만들 수 있다.
+
+```c++
+{
+    Lock ml(&mutex);
+    
+    delete bgImage;
+    ...
+}
+```
+
+​	Lock과 같은 리소스 매니징 클래스의 장점은 함수를 짧게 만든다는 점이다.
+
+​	unlock이 더이상 필요하지 않게 된다. 따라서 이해하기도 더 쉽다.
+
+
+
+2. 자료구조 corruption 문제 대응
+
+   exception-safe한 함수를 만들기 위해 세 가지 종류의 guarantee들 중에서 선택해야 한다:
+
+   1) **the basic guarantee**
+
+   exception throw가 발생하더라도 프로그램의 모든 것이 valid 상태에 있는 것.
+
+   모든 객체나 자료구조가 corrupt되지 않고, 모든 객체가 내적으로 일관된 상태에 있는 것이다.
+
+   하지만 프로그램의 정확한 상태는 예측 불가능하다.
+
+   changeBackground 함수 도중에 exception이 발생하면 객체는 이전의 배경이미지를 가지고 있을 수도, default 배경 이미지를 가지고 있을 수도 있다.
+
+   클라이언트는 그것을 예측할 수 없다.(알아내려면 멤버 함수를 불러서 확인해봐야 한다)
+
+   
+
+   2) **the strong guarantee**
+
+   exception이 throw 됐을 때 프로그램의 상태가 변하지 않는 것을 보장한다.
+
+   이러한 함수의 호출은 '원자적'이어서 성공하면 완전히 성공하고, 실패하면, 프로그램 상태는 함수가 호출되지 않았던 것처럼 된다.
+
+   ​	
+
+   strong guarantee를 보장하는 함수를 쓰는 것이 더 쉽다.
+
+   strong에서는 오직 두 가지의 프로그램 상태만 존재하지 때문이다: 예상되는 성공적인 함수 실행 or 함수가 실행되었을 때의 프로그램 상태
+
+   basic에서는 exception이 발생했을 때 프로그램은 어떤 유효한 상태로도 변할 수 있다.
+
+   
+
+   3) **the nothrow guarantee**
+
+   exception을 throw하지 않을 것을 보장한다.
+
+   모든 빌트인 타입에 대한 연산은 no-throw이다. -> exception-safe 코드를 작성하는 데 중요하다.
+
+   #### empty exception specification
+
+   ```c++
+   int doSomething() throw(); // note empty exception spec.
+   ```
+
+   위의 spec.은 doSomething이 never throw라고 말해주지는 않는다.
+
+   대신 doSomething이 exception을 던지면 그것은 심각한 에러이고, unexpected 함수가 불려야 한다는 것을 의미한다.
+
+   사실 exception guarantee를 전혀 제공하지 않고 있는 것이다.
+
+   함수의 선언만으로는 그 함수가 옳은지, 이식 가능한지, 효율적인지에 대해 알 수가 없으며 마찬가지로 exception safety를 보장하는지도 알 수 없다.
+
+   그 모든 특징들은 함수의 정의에 의해 결정된다.
+
+
+
+exception-safe한 코드는 위의 3가지 guarantee 중 하나를 반드시 제공해야 한다.
+
+일반적인 규칙으로서 너는 가장 강한 guarantee를 제공하고 싶을 것이다.
+
+nothrow 함수는 정말 멋지지만, C++의 C part가 아닌 부분에서 throw하지 않는 함수만 쓰기는 어렵다.
+
+STL container와 같은 동적으로 할당되는 메모리는 충분한 메모리를 찾지 못하면 전형적으로 bad_alloc exception을 발생시킨다.
+
+**그러니 만약 가능하다면 nothrow를 제공하고, 대부분의 함수에서는 basic과 strong guarantee 중에서 선택해야 한다.**
+
+
+
+changeBackground 예제에서 strong gurantee를 제공하는 것은 **거의** 가능하다.
+
+1. `bgImage` data member를 built-in Image* 포인터에서 shared_ptr로 바꾼다.(Item 13 참고)
+
+   smart resource-managing pointer가 strong exception safety를 제공한다는 점은,
+
+   Item 13에서 이것을 쓰는 것인 좋은 설계의 기초라고 했던 주장을 뒷받침해준다.
+
+   
+
+2. 문장의 순서를 바꿔서 image가 바뀌기 전에는 `imageChanges`를 증가시키지 않는다.
+
+   어떤 일이 실제로 일어나기 전에 객체의 상태를 변경하지 않는 것이 좋은 정책이다.
+
+
+
+
+
+이제 너가 직접 old image를 delete할 필요가 없다.
+
+smart pointer 안에서 알아서 해주기 때문이다.
+
+게다가 reset 함수는 그 인자(new Image()의 결과)가 성공적으로 생성되었을 때에만 호출된다.
+
+함수에 진입하지 않으면 delete도 호출되지 않는다.
+
+또한 리소스 관리를 위한 객체의 사용이 함수의 길이를 줄여주기도 했다.
+
+
+
+### strong guarantee를 제공하지 못하게 하는 옥의 티
+
+앞서 말했듯이 위의 2가지 변경을 통해 strong guarantee를 제공하는 것이 **거의** 가능한데,
+
+무엇이 옥의 티일까?
+
+`imgSrc`라는 파라미터이다.
+
+Image constructor가 throw exception하면 input stream에 대한 read marker는 이미 움직였을 가능성이 있고,
+
+그런 움직임은 프로그램의 다른 부분에서 발견할 수 있는 상태 변화에 해당할 수 있다.
+
+이 이슈를 처리하지 않으면 위의 예제는 basic exception safety guarantee에 머물게 된다.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
