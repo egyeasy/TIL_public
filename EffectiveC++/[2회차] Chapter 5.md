@@ -786,9 +786,158 @@ Image constructor가 throw exception하면 input stream에 대한 read marker는
 
 
 
+### copy and swap
+
+옥의 티는 제쳐두고 changeBackground가 strong guarantee를 제공한다고 가정해보자.
+
+strong guarantee를 만들어낼 수 있는 전형적인 디자인 전략이 있으므로, 그것에 친숙해지자.
+
+그것은 **copy and swap**이다.
+
+1. 변경을 원하는 객체의 복사본을 만들고, 복사에 변경 사항을 반영한다.
+2. 변경 연산 중 하나라도 exception을 발생시키면 원래의 객체는 변경되지 않은 상태로 남아있게 된다.
+3. 모든 변경 사항이 반영되면 original과 copy를 non-throwing 연산을 통해 swap 한다.
 
 
 
+### pimpl idiom
+
+copy and swap은 일반적으로 pimpl idiom이라는 방식으로 구현된다.
+
+이것은 진짜 객체의 (변경되어야 하는) 데이터를 분리된 구현 객체(여기서는 struct)에 넣고,
+
+이 구현 객체에 대한 포인터를 진짜 객체가 가지고 있게 하는 것이다.
+
+```c++
+struct PMImpl {
+  std::shared_ptr<Image> bgImage;
+  int imageChanges;
+};
+
+class PrettyMenu {
+  private:
+    Mutex mutex;
+    std::shared_ptr<PMImpl> pImpl;
+};
+
+void PrettyMenu::changeBackground(std::istream& imgSrc) {
+    using std::swap;
+    Lock ml(&mutex);
+    std::shared_ptr<PMImpl> pNew(new PMImpl(*pImpl));
+    pNew->bgImage.reset(new Image(imgSrc));
+    ++pNew->imageChanges;
+    swap(pImpl, pNew);
+}
+```
+
+위 예제에서 PMImpl을 클래스 대신에 struct로 쓴 것은 pImpl 멤버 변수가 private이기 때문에 캡슐화 되도록 보장되기 때문이다.
+
+원한다면 PMImpl이 PrettyMenu 객체 안에 Nested 될 수 있지만 패키징 이슈는 여기서는 논외이므로 언급을 생략한다.
+
+
+
+### strongly exception-safe는 달성하기 어렵다
+
+copy-and-swap 전략은 객체의 상태에 all-or-nothing 변경을 만들어내고자 할 때 훌륭한 전략이다.
+
+하지만 일반적으로 모든 함수가 strongly exception-safe함을 보장해주지도 않는다.
+
+예를 들어:
+
+```c++
+void someFunc() {
+    f1();
+    f2();
+}
+```
+
+f1이나 f2가 strong exception-safe하지 않으면, someFunc가 strongly exception-safe하기 어렵다.
+
+만일 f1이 basic guarantee를 제공한다면 f1을 호출하기 전에 모든 프로그램의 상태를 결정하는 코드를 작성하고, f1의 (exception이 발생한다면) 모든 exception을 catch하고, 원래의 상태를 복구해야 한다.
+
+
+
+f1, f2가 모두 strongly exception-safe하다고 해도 문제가 있다.
+
+f1이 완료되면 프로그램의 상태는 임의적인 상태로 변경되었을 것이고, 이 때 f2가 throw하면 프로그램의 상태는 someFunc가 호출되기 이전과 같지 않게 되기 때문이다.
+
+
+
+문제는 사이드 이펙트다.
+
+함수가 lcoal state에서만 연산하면 상대적으로 strong guarantee를 제공하기가 쉽다.
+
+하지만 사이드 이펙트가 non-local data에 대해 발생하면 훨씬 어려워진다.
+
+f1 호출의 사이드 이펙트가 데이터베이스 변경이라면 someFunc를 strongly exception-safe하게 만들기가 정말 어려워진다.
+
+
+
+### 효율성 문제
+
+strong guarantee에는 효율성 문제 또한 존재한다.
+
+copy-and-swap에서는 변경될 객체를 copy 하는 데 시간과 공간이 소모된다.
+
+따라서 strong guarantee는 상당히 바람직하지만, 그것을 쓰는 것이 실용적일 때만 써야 한다. 그리고 그게 항상 실용적인 것은 아니다.
+
+
+
+### 일반적으로는 basic guarantee가 낫다
+
+실용적이지 않은 경우라면 basic guarantee를 제공해야 한다.
+
+너는 어떤 함수들에 대해 strong guarantee를 제공할 수 있다는 것을 알아낼 것이지만,
+
+효율성이나 복잡성의 비용 때문에 누군가는 그걸 싫어할 것이다.
+
+실용적일 때에만 strong guarantee를 제공하려고 정말 노력했다면 basic guarantee를 제공한다고 해서 욕할 수는 없다.
+
+많은 함수에 대해서 basic guarantee가 완벽하게 합리적인 선택이다.
+
+
+
+### no exception-safety
+
+하지만 exception-safey를 전혀 제공하지 않는 함수를 작성한다면 문제가 달라진다.
+
+너가 무고하다고 입증하기 전까지는 유죄다.(그러니 그러지 마라)
+
+너는 반드시 exeption-safe한 코드를 작성해야 한다.
+
+f2가 exception guarantee를 제공하지 않는다면, f2가 throw 했을 때 프로그램의 리소스가 f2 내부에서 leak된다.
+
+이는 f2가 corrupted 자료구조를 갖게 되는 것을 의미한다.
+
+-> f2를 호출하는 someFunc는 corruption에 대해 보상해줄 수 없고, 따라서 someFunc도 guarantee를 제공할 수 없게 된다.
+
+
+
+### 1 or 0
+
+소프트웨어 시스템은 exception-safe하거나 그렇지 않거나 이다.
+
+부분적으로 safe 한 것은 없다.
+
+시스템이 하나의 exception-safe하지 않은 함수를 갖고 있다면 시스템 전체가 exception-safe하지 않은 것이다.
+
+
+
+새로운 코드를 작성하거나 존재하는 코드를 수정할 때 어떻게 exception-safe하게 만들 것인지 고민해봐라.
+
+리소스를 관리하기 위한 객체를 쓰는 것부터 시작해라.
+
+그 다음엔 너가 작성하는 함수 각각에서 실용적으로 제공할 수 있는 한에서 가장 strong한 guarantee를 제공해라.
+
+만약 레거시 코드가 어쩔 수 없다면 no-guarantee를 제공해라.
+
+너의 결정을 문서화해라.
+
+함수의 exception-safety guarantee는 인터페이스에서 보이는 부분이므로 함수의 인터페이스의 다른 특성들을 선택할 때와 같이 심사숙고 해서 골라라.
+
+
+
+시간은 흐르고 우리는 배우면서 변한다.
 
 
 
