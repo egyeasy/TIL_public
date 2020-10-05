@@ -720,7 +720,7 @@ exception safety의 두 요건은 다음과 같다.
 
    대신 doSomething이 exception을 던지면 그것은 심각한 에러이고, unexpected 함수가 불려야 한다는 것을 의미한다.
 
-   사실 exception guarantee를 전혀 제공하지 않고 있는 것이다.
+   이것은 사실 exception guarantee를 전혀 제공하지 않고 있는 것이다.
 
    함수의 선언만으로는 그 함수가 옳은지, 이식 가능한지, 효율적인지에 대해 알 수가 없으며 마찬가지로 exception safety를 보장하는지도 알 수 없다.
 
@@ -746,7 +746,7 @@ changeBackground 예제에서 strong gurantee를 제공하는 것은 **거의** 
 
    smart resource-managing pointer가 strong exception safety를 제공한다는 점은,
 
-   Item 13에서 이것을 쓰는 것인 좋은 설계의 기초라고 했던 주장을 뒷받침해준다.
+   Item 13에서 이것을 쓰는 것이 좋은 설계의 기초라고 했던 주장을 뒷받침해준다.
 
    
 
@@ -766,7 +766,7 @@ smart pointer 안에서 알아서 해주기 때문이다.
 
 함수에 진입하지 않으면 delete도 호출되지 않는다.
 
-또한 리소스 관리를 위한 객체의 사용이 함수의 길이를 줄여주기도 했다.
+또한 리소스 관리를 위한 객체의 사용이 함수 정의의 길이를 줄여주기도 했다.
 
 
 
