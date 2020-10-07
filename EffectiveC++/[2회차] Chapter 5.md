@@ -1390,7 +1390,94 @@ class Person {
 
   클라이언트가 필요로 하지 않는 타입 정의에 대한 인위적인 의존성을 제거할 수 있다.
 
-​	
+ - **선언과 정의에 대해 별개의 헤더 파일을 제공하라.**
+
+   위의 가이드라인을 지키는 것을 용이하게 하기 위해, 헤더 파일은 쌍으로 만들어져야 한다: 하나는 선언을 위해, 다른 하나는 정의를 위해
+
+   이러한 파일들 사이의 일관성은 유지되어야 한다.
+
+   라이브러리 클라이언트들은 직접 무언가를 전방선언하는 대신, 선언 파일을 #include 하면 되고, 라이브러리 작성자는 두 개의 헤더 파일을 제공해야 한다.
+
+   예를 들어 Date 클라이언트는 다음과 같이 헤더를 include하면 된다.
+
+   ```c++
+   #include "datefwd.h"
+   
+   Date today();
+   void clearAppointments(Date d);
+   ```
+
+   선언만 있는 헤더 파일인 "datefwd.h"의 이름은 스탠다드 c++ 라이브러리의 `<iosfwd>`의 이름에 기초해있다.
+
+   `<iosfwd>`는 iostream 컴포넌트들의 선언을 갖고 있고, 그 컴포넌트들의 각각의 정의는 여러 개의 서로 다른 헤더(`<sstream>, <fstream>, <iostream>`)에 있다.
+
+   `<iosfwd>`는 또 다른 이유로 가르침을 주는데, 이 Item의 조언이 non-template 뿐만 아니라 **template에도 적용된다**는 것이다.
+
+   Iteem 30이 많은 빌드 환경에서 템플릿 정의가 헤더 파일에서 발견된다고 하지만, 몇몇 빌드 환경은 non-헤더 파일에 템플릿 정의를 하는 것을 허용한다.
+
+   따라서 템플릿에 대해 선언만 있는 헤더를 제공하는 것은 여전히 말이 된다. `<iosfwd>`는 그런 헤더다.
+
+
+   C++은 템플릿 선언을 템플릿 정의로부터 분리하는 것을 허용하기 위해 `export` 키워드를 제공한다. 하지만 불행하게도 export를 지원하는 컴파일러는 거의 없고, 따라서 export를 사용하는 실제 경험은 더 없다. 결과적으로 export에 대해 얘기하는 것은 별로 적절하지 못하다.
+
+
+
+### Handle Classes
+
+`Person`과 같이 pimpl idiom을 사용하는 클래스를 Handle Class라고 한다.
+
+이 클래스는 그들의 함수 호출이 그에 대응되는 구현 클래스로 이어지도록 하고 그 클래스들이 직접 작업을 처리하도록 한다.
+
+예를 들어 Person의 멤버 함수는 다음과 같이 구현된다:
+
+```c++
+#include "Person.h"
+#include "PersonImpl.h"
+
+Person::Person(const std::string& name, const Date& birthday, const Address& addr)
+  : pImpl(new PersonImpl(name, birthday, addr)) {}
+
+std::string Person::name() const {
+    return pImpl->name();
+}
+```
+
+Person 생성자가 어떻게 PersonImpl 생성자를 호출하는지 주목해라.
+
+그리고 어떻게 Person::name이 PersonImpl::name을 호출하는지 주목해라.
+
+Person을 Handle class로 만드는 것은 Person이 무엇을 하는지를 바꾸는 게 아니라, 그것을 하는 방법을 바꾸는 것이다.
+
+
+
+### Interface class : Handle Class의 대안
+
+Handle Class의 대안은 Person을 **Interface class**라고 불리는 추상 클래스로 만드는 것이다.
+
+추상 클래스의 목적은 파생 클래스를 위한 인터페이스를 특정하기 위한 것이다(Item 34)
+
+결과적으로 추상클래스는 데이터 멤버를 가지고 있지 않고, 생성자도 없고, virtual 소멸자를 가지고 있고, 인터페이스를 특정하는 순수 가상 함수의 집합을 가지고 있다.
+
+
+
+인터페이스 클래스는 Java와 .NET의 인터페이스와 유사하지만, C++은 Java와 .NET에서 하듯이 인터페이스에 대한 제약을 가하지는 않는다.
+
+Java나 .NET에서는 인터페이스에 데이터 멤버나 함수 구현을 허용하지 않지만, C++은 그렇지 않기 때문에 그 유연함 때문에 유용할 수 있다.
+
+Item 36에서 말하듯이, non 가상 함수에 대한 구현은 hierarchy 내의 모든 클래스 내에서 같아야 하기 때문에, 그 클래스들을 선언하는 인터페이스의 한 부분으로 그런 함수들을 구현하는 것은 말이 된다.
+
+Person에 대한 인터페이스 클래스는 다음과 같을 것이다:
+
+```c++
+class Person {
+  public:
+    virtual ~Person();
+    
+    virtual std::string name() const = 0;
+    virtual std::string birthDate() const = 0;
+    virtual std::string address() const = 0;
+}
+```
 
 
 
