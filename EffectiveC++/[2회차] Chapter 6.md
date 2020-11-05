@@ -124,11 +124,79 @@ makeBigger 함수를 수행한 이후에 s의 width와 height가 같다고 할 �
 
 
 
+## Item 33: 상속되는 이름이 가려지는 것을 피하라.
+
+문제는 상속과 관계가 없고, 스코프와 관계가 있다.
 
 
 
+### 상속이 아닌 scope
+
+```c++
+int x;
+void someFunc()
+{
+    double x;
+    std::cin >> x;
+}
+```
+
+x를 읽는 부분은 글로벌 변수 x가 아닌 로컬 변수 x를 참조한다.
+
+int, double과 같은 타입과는 상관 없이 local x가 global x와 이름만 같다면 global x를 숨기게 된다.
 
 
+
+### 상속 scope
+
+```c++
+void Derived::mf4() {
+    mf2();
+}
+```
+
+먼저 local scope를 찾고 -> Derived 클래스의 scope를 찾고 -> base 클래스 scope 찾는다 -> 최후에는 global scope
+
+
+
+### 오버로드가 있는 경우의 상속 - public
+
+인자 타입을 추가하는 등으로 오버로드를 한 함수명을 Derived 클래스에서 함수명으로 쓴다면, Derived의 함수명에 의해 base의 함수명이 숨겨지게 된다.
+
+만약 public 상속을 하고 있는데 너가 오버로드한 함수를 상속받을 수 없다며 이것은 is-a relationship에 위배된다.
+
+그럴 때의 방법은
+
+```c++
+class Derived: public Base {
+  public:
+    using Base::mf1;
+    using Base::mf3;
+    
+    virtual void mf1();
+    void mf3();
+    void mf4();
+}
+```
+
+
+
+### 오버로드가 있는 경우의 상속 - private
+
+private 상속의 경우에는 테크닉이 다르다.
+
+Derived에서 인자가 없는 mf1을 상속받고 싶은 경우에, `using` 선언을 하면 해당 이름을 가진 모든 상속 함수들이 보여질 것이기 때문에 안 된다.
+
+대신 **forwarding function**을 쓴다.
+
+```c++
+class Derived: private Base {
+  public:
+    virtual void mf1() {
+        Base::mf1();
+    }
+}
+```
 
 
 
